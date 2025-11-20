@@ -38,8 +38,7 @@ class RolePermissionSeeder extends Seeder
             'delete permissions',
             
             // App Configuration
-            'view settings',
-            'edit settings',
+            'manage settings',
         ];
 
         foreach ($permissions as $permission) {
@@ -58,6 +57,7 @@ class RolePermissionSeeder extends Seeder
             'edit users',
             'view roles',
             'view permissions',
+            'manage settings',
         ]);
 
         $user = Role::create(['name' => 'User']);
