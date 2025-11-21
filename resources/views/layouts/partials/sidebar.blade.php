@@ -1,85 +1,339 @@
 <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+
     <div class="app-brand demo">
         <a href="{{ route('dashboard') }}" class="app-brand-link">
-            @if(app_config('sidebar_logo') && file_exists(public_path(app_config('sidebar_logo'))))
-            <span class="app-brand-logo demo">
-                <img src="{{ asset(app_config('sidebar_logo')) }}" alt="Sidebar Logo" style="height: 32px; width: auto;">
-            </span>
+
+            @if (app_config('sidebar_logo') && file_exists(public_path(app_config('sidebar_logo'))))
+                <span class="app-brand-logo demo">
+                    <img src="{{ asset(app_config('sidebar_logo')) }}" alt="Logo"
+                        style="max-height: 22px; width: auto;">
+                </span>
             @else
-            <span class="app-brand-logo demo">
-                <svg width="32" height="22" viewBox="0 0 32 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path fill-rule="evenodd" clip-rule="evenodd" d="M0.00172773 0V6.85398C0.00172773 6.85398 -0.133178 9.01207 1.98092 10.8388L13.6912 21.9964L19.7809 21.9181L18.8042 9.88248L16.4951 7.17289L9.23799 0H0.00172773Z" fill="{{ app_config('primary_color') }}" />
-                    <path opacity="0.06" fill-rule="evenodd" clip-rule="evenodd" d="M7.69824 16.4364L12.5199 3.23696L16.5541 7.25596L7.69824 16.4364Z" fill="#161616" />
-                    <path opacity="0.06" fill-rule="evenodd" clip-rule="evenodd" d="M8.07751 15.9175L13.9419 4.63989L16.5849 7.28475L8.07751 15.9175Z" fill="#161616" />
-                    <path fill-rule="evenodd" clip-rule="evenodd" d="M7.77295 16.3566L23.6563 0H32V6.88383C32 6.88383 31.8262 9.17836 30.6591 10.4057L19.7824 22H13.6938L7.77295 16.3566Z" fill="{{ app_config('primary_color') }}" />
-                </svg>
-            </span>
+                <span class="app-brand-logo demo">
+                    <svg width="32" height="22" viewBox="0 0 32 22" fill="none"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" clip-rule="evenodd"
+                            d="M0.00172773 0V6.85398C0.00172773 6.85398 -0.133178 9.01207 1.98092 10.8388L13.6912 21.9964L19.7809 21.9181L18.8042 9.88248L16.4951 7.17289L9.23799 0H0.00172773Z"
+                            fill="{{ app_config('primary_hex') }}" />
+                        <path opacity="0.06" fill-rule="evenodd" clip-rule="evenodd"
+                            d="M7.69824 16.4364L12.5199 3.23696L16.5541 7.25596L7.69824 16.4364Z" fill="#161616" />
+                        <path opacity="0.06" fill-rule="evenodd" clip-rule="evenodd"
+                            d="M8.07751 15.9175L13.9419 4.63989L16.5849 7.28475L8.07751 15.9175Z" fill="#161616" />
+                        <path fill-rule="evenodd" clip-rule="evenodd"
+                            d="M7.77295 16.3566L23.6563 0H32V6.88383C32 6.88383 31.8262 9.17836 30.6591 10.4057L19.7824 22H13.6938L7.77295 16.3566Z"
+                            fill="{{ app_config('primary_hex') }}" />
+                    </svg>
+                </span>
             @endif
+
             <span class="app-brand-text demo menu-text fw-bold">{{ app_config('sidebar_name') }}</span>
         </a>
 
         <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">
-            <i class="ti ti-x align-middle"></i>
+            <i class="ti menu-toggle-icon d-none d-xl-block ti-sm align-middle"></i>
+            <i class="ti ti-x d-block d-xl-none ti-sm align-middle"></i>
         </a>
     </div>
 
     <div class="menu-inner-shadow"></div>
 
     <ul class="menu-inner py-1">
-        <!-- Dashboard -->
-        <li class="menu-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+
+        <li @class(['menu-item', 'active' => request()->routeIs('dashboard')])>
             <a href="{{ route('dashboard') }}" class="menu-link">
                 <i class="menu-icon tf-icons ti ti-smart-home"></i>
                 <div data-i18n="Dashboard">Dashboard</div>
             </a>
         </li>
 
-        <!-- User Management -->
-        @can('view users')
+        @role('Super Admin')
+            <li class="menu-header small text-uppercase">
+                <span class="menu-header-text">PMO & Workspaces</span>
+            </li>
+
+            <li @class(['menu-item', 'active' => request()->routeIs('workspaces.*')])>
+                <a href="javascript:void(0);" class="menu-link menu-toggle">
+                    <i class="menu-icon tf-icons ti ti-briefcase"></i>
+                    <div data-i18n="Workspaces">Workspaces</div>
+                </a>
+                <ul class="menu-sub">
+                    <li @class([
+                        'menu-item',
+                        'active' => request()->routeIs('workspaces.index'),
+                    ])>
+                        <a href="{{ route('workspaces.index') }}" class="menu-link">
+                            <div data-i18n="All Workspaces">All Workspaces</div>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="#" class="menu-link">
+                            <div data-i18n="Create New">Create New</div>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <li @class(['menu-item', 'active' => request()->routeIs('team-management.*')])>
+                <a href="{{ route('team-management.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons ti ti-users-group"></i>
+                    <div data-i18n="Team Management">Team Management</div>
+                </a>
+            </li>
+
+            <li @class(['menu-item', 'active' => request()->routeIs('timeline.*')])>
+                <a href="{{ route('timeline.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons ti ti-timeline"></i>
+                    <div data-i18n="Global Timeline">Global Timeline</div>
+                </a>
+            </li>
+        @endrole
+
+
         <li class="menu-header small text-uppercase">
-            <span class="menu-header-text">User Management</span>
+            <span class="menu-header-text">Your Workspace</span>
         </li>
-        <li class="menu-item {{ request()->routeIs('users.*') ? 'active' : '' }}">
-            <a href="{{ route('users.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons ti ti-users"></i>
-                <div data-i18n="Users">Users</div>
-            </a>
-        </li>
-        @endcan
 
-        <!-- Roles & Permissions -->
-        @can('view roles')
-        <li class="menu-header small text-uppercase">
-            <span class="menu-header-text">Access Control</span>
-        </li>
-        <li class="menu-item {{ request()->routeIs('roles.*') ? 'active' : '' }}">
-            <a href="{{ route('roles.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons ti ti-shield"></i>
-                <div data-i18n="Roles">Roles</div>
+        <li @class([
+            'menu-item',
+            'active open' => request()->routeIs(['sprint.*', 'tasks.*', 'reports.*']),
+        ])>
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons ti ti-rocket"></i>
+                <div data-i18n="Velocity">Velocity</div>
+                <div class="badge bg-label-primary rounded-pill ms-auto">Active</div>
             </a>
-        </li>
-        @endcan
 
-        @can('view permissions')
-        <li class="menu-item {{ request()->routeIs('permissions.*') ? 'active' : '' }}">
-            <a href="{{ route('permissions.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons ti ti-lock"></i>
-                <div data-i18n="Permissions">Permissions</div>
+            <ul class="menu-sub">
+
+                <li @class(['menu-item', 'active open' => request()->routeIs('sprint.*')])>
+                    <a href="javascript:void(0);" class="menu-link menu-toggle">
+                        <i class="menu-icon tf-icons ti ti-layout-kanban"></i>
+                        <div data-i18n="Agile Board">Agile Board</div>
+                    </a>
+                    <ul class="menu-sub">
+                        <li @class(['menu-item', 'active' => request()->routeIs('sprint.board')])>
+                            <a href="{{ route('sprint-board') }}" class="menu-link">
+                                <div data-i18n="Sprint Board">Sprint Board</div>
+                            </a>
+                        </li>
+                        <li @class([
+                            'menu-item',
+                            'active' => request()->routeIs('sprint.assignment'),
+                        ])>
+                            <a href="#" class="menu-link">
+                                <div data-i18n="Assignments">Sprint Assignment</div>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li @class(['menu-item', 'active open' => request()->routeIs('tasks.*')])>
+                    <a href="javascript:void(0);" class="menu-link menu-toggle">
+                        <i class="menu-icon tf-icons ti ti-list-check"></i>
+                        <div data-i18n="Tasks & Issues">Tasks & Issues</div>
+                    </a>
+                    <ul class="menu-sub">
+                        <li @class([
+                            'menu-item',
+                            'active' => request()->routeIs('tasks.features'),
+                        ])>
+                            <a href="#" class="menu-link">
+                                <div data-i18n="Features & Tasks">Features & Tasks</div>
+                            </a>
+                        </li>
+                        <li @class(['menu-item', 'active' => request()->routeIs('tasks.bugs')])>
+                            <a href="#" class="menu-link">
+                                <div data-i18n="Bug Reports">Bug Reports</div>
+                            </a>
+                        </li>
+                        <li @class(['menu-item', 'active' => request()->routeIs('tasks.modules')])>
+                            <a href="#" class="menu-link">
+                                <div data-i18n="Module List">Module List</div>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li @class([
+                    'menu-item',
+                    'active open' => request()->routeIs('reports.*'),
+                ])>
+                    <a href="javascript:void(0);" class="menu-link menu-toggle">
+                        <i class="menu-icon tf-icons ti ti-chart-pie-2"></i>
+                        <div data-i18n="Reports & Docs">Reports & Docs</div>
+                    </a>
+                    <ul class="menu-sub">
+                        <li @class([
+                            'menu-item',
+                            'active' => request()->routeIs('reports.progress'),
+                        ])>
+                            <a href="#" class="menu-link">
+                                <div data-i18n="Project Progress">Project Progress</div>
+                            </a>
+                        </li>
+                        <li @class(['menu-item', 'active' => request()->routeIs('reports.team')])>
+                            <a href="#" class="menu-link">
+                                <div data-i18n="Team Performance">Team Report</div>
+                            </a>
+                        </li>
+                        <li @class(['menu-item', 'active' => request()->routeIs('reports.mom')])>
+                            <a href="#" class="menu-link">
+                                <div data-i18n="Minute of Meeting">Minute of Meeting</div>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+            </ul>
+        </li>
+
+        <li @class([
+            'menu-item',
+            'active open' => request()->routeIs(['sprint.*', 'tasks.*', 'reports.*']),
+        ])>
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons ti ti-rocket"></i>
+                <div data-i18n="SYFA">SYFA</div>
+                <div class="badge bg-label-primary rounded-pill ms-auto">Active</div>
             </a>
-        </li>
-        @endcan
 
-        <!-- Configuration -->
+            <ul class="menu-sub">
+
+                <li @class(['menu-item', 'active open' => request()->routeIs('sprint.*')])>
+                    <a href="javascript:void(0);" class="menu-link menu-toggle">
+                        <i class="menu-icon tf-icons ti ti-layout-kanban"></i>
+                        <div data-i18n="Agile Board">Agile Board</div>
+                    </a>
+                    <ul class="menu-sub">
+                        <li @class(['menu-item', 'active' => request()->routeIs('sprint.board')])>
+                            <a href="#" class="menu-link">
+                                <div data-i18n="Sprint Board">Sprint Board</div>
+                            </a>
+                        </li>
+                        <li @class([
+                            'menu-item',
+                            'active' => request()->routeIs('sprint.assignment'),
+                        ])>
+                            <a href="#" class="menu-link">
+                                <div data-i18n="Assignments">Sprint Assignment</div>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li @class(['menu-item', 'active open' => request()->routeIs('tasks.*')])>
+                    <a href="javascript:void(0);" class="menu-link menu-toggle">
+                        <i class="menu-icon tf-icons ti ti-list-check"></i>
+                        <div data-i18n="Tasks & Issues">Tasks & Issues</div>
+                    </a>
+                    <ul class="menu-sub">
+                        <li @class([
+                            'menu-item',
+                            'active' => request()->routeIs('tasks.features'),
+                        ])>
+                            <a href="#" class="menu-link">
+                                <div data-i18n="Features & Tasks">Features & Tasks</div>
+                            </a>
+                        </li>
+                        <li @class(['menu-item', 'active' => request()->routeIs('tasks.bugs')])>
+                            <a href="#" class="menu-link">
+                                <div data-i18n="Bug Reports">Bug Reports</div>
+                            </a>
+                        </li>
+                        <li @class(['menu-item', 'active' => request()->routeIs('tasks.modules')])>
+                            <a href="#" class="menu-link">
+                                <div data-i18n="Module List">Module List</div>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li @class([
+                    'menu-item',
+                    'active open' => request()->routeIs('reports.*'),
+                ])>
+                    <a href="javascript:void(0);" class="menu-link menu-toggle">
+                        <i class="menu-icon tf-icons ti ti-chart-pie-2"></i>
+                        <div data-i18n="Reports & Docs">Reports & Docs</div>
+                    </a>
+                    <ul class="menu-sub">
+                        <li @class([
+                            'menu-item',
+                            'active' => request()->routeIs('reports.progress'),
+                        ])>
+                            <a href="#" class="menu-link">
+                                <div data-i18n="Project Progress">Project Progress</div>
+                            </a>
+                        </li>
+                        <li @class(['menu-item', 'active' => request()->routeIs('reports.team')])>
+                            <a href="#" class="menu-link">
+                                <div data-i18n="Team Performance">Team Report</div>
+                            </a>
+                        </li>
+                        <li @class(['menu-item', 'active' => request()->routeIs('reports.mom')])>
+                            <a href="#" class="menu-link">
+                                <div data-i18n="Minute of Meeting">Minute of Meeting</div>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+            </ul>
+        </li>
+
+        @canany(['view users'])
+            <li class="menu-header small text-uppercase">
+                <span class="menu-header-text">People & Teams</span>
+            </li>
+
+            @can('view users')
+                <li @class(['menu-item', 'active' => request()->routeIs('users.*')])>
+                    <a href="{{ route('users.index') }}" class="menu-link">
+                        <i class="menu-icon tf-icons ti ti-users"></i>
+                        <div data-i18n="Users">Users</div>
+                    </a>
+                </li>
+            @endcan
+        @endcanany
+
+        @canany(['view roles', 'view permissions'])
+            <li class="menu-header small text-uppercase">
+                <span class="menu-header-text">Security & Access</span>
+            </li>
+
+            @can('view roles')
+                <li @class(['menu-item', 'active' => request()->routeIs('roles.*')])>
+                    <a href="{{ route('roles.index') }}" class="menu-link">
+                        <i class="menu-icon tf-icons ti ti-settings"></i>
+                        <div data-i18n="Roles">Roles</div>
+                    </a>
+                </li>
+            @endcan
+
+            @can('view permissions')
+                <li @class(['menu-item', 'active' => request()->routeIs('permissions.*')])>
+                    <a href="{{ route('permissions.index') }}" class="menu-link">
+                        <i class="menu-icon tf-icons ti ti-lock"></i>
+                        <div data-i18n="Permissions">Permissions</div>
+                    </a>
+                </li>
+            @endcan
+        @endcanany
+
         @can('manage settings')
-        <li class="menu-header small text-uppercase">
-            <span class="menu-header-text">System</span>
-        </li>
-        <li class="menu-item {{ request()->routeIs('admin.config.*') ? 'active' : '' }}">
-            <a href="{{ route('admin.config.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons ti ti-settings"></i>
-                <div data-i18n="Configuration">Configuration</div>
-            </a>
-        </li>
+            <li class="menu-header small text-uppercase">
+                <span class="menu-header-text">Apps & Pages</span>
+            </li>
+
+            <li @class([
+                'menu-item',
+                'active' => request()->routeIs('admin.config.*'),
+            ])>
+                <a href="{{ route('admin.config.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons ti ti-adjustments"></i>
+                    <div data-i18n="Configuration">Configuration</div>
+                </a>
+            </li>
         @endcan
     </ul>
 </aside>
