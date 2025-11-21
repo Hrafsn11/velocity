@@ -10,9 +10,9 @@ class ConfigSeeder extends Seeder
     public function run(): void
     {
         $configs = [
-            ['config_name' => 'app_name', 'config_value' => 'Admin Starter'],
+            ['config_name' => 'app_name', 'config_value' => 'Velocity'],
             ['config_name' => 'app_logo', 'config_value' => '/assets/img/favicon/favicon.ico'],
-            ['config_name' => 'sidebar_name', 'config_value' => 'Admin Starter'],
+            ['config_name' => 'sidebar_name', 'config_value' => 'Velocity'],
             ['config_name' => 'sidebar_logo', 'config_value' => '/assets/svg/icons/vuexy-sidebar.svg'],
             ['config_name' => 'primary_hex', 'config_value' => '#7367f0'],
             ['config_name' => 'app_home', 'config_value' => 'Dashboard'],

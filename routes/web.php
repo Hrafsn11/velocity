@@ -1,12 +1,14 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\UserController;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\TimelineController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\SprintController;
+use App\Http\Controllers\TeamManagementController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
-use Illuminate\Support\Facades\Route;
 
 // Redirect root ke login
 Route::get('/', function () {
@@ -15,10 +17,20 @@ Route::get('/', function () {
 
 // Protected routes (memerlukan login)
 Route::middleware(['auth', 'verified'])->group(function () {
-    
+
     // Dashboard - semua user bisa akses
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    
+
+    Route::get('/workspaces', function () {
+        return view('admin.workspace.index');
+    })->name('workspaces.index');
+
+    Route::get('/team-management', [TeamManagementController::class, 'index'])->name('team-management.index');
+
+    Route::get('/timeline', [TimelineController::class, 'index'])->name('timeline.index');
+
+    Route::get('/sprint-board', [SprintController::class, 'board'])->name('sprint-board');
+
     // Profile Management
     Route::prefix('profile')->name('profile.')->controller(AdminProfileController::class)->group(function () {
         Route::get('/', 'edit')->name('edit');
