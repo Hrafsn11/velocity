@@ -320,6 +320,18 @@
             @endcan
         @endcanany
 
+        @can('view employees')
+            <li class="menu-header small text-uppercase">
+                <span class="menu-header-text">HR Management</span>
+            </li>
+            <li @class(['menu-item', 'active' => request()->routeIs('employees.*')])>
+                <a href="{{ route('employees.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons ti ti-briefcase"></i>
+                    <div data-i18n="Employees">Manage Employees</div>
+                </a>
+            </li>
+        @endcan
+
         @can('manage settings')
             <li class="menu-header small text-uppercase">
                 <span class="menu-header-text">Apps & Pages</span>

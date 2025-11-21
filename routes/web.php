@@ -9,6 +9,7 @@ use App\Http\Controllers\TeamManagementController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
+use App\Http\Controllers\Admin\EmployeeController;
 
 // Redirect root ke login
 Route::get('/', function () {
@@ -59,6 +60,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', [App\Http\Controllers\Admin\ConfigController::class, 'index'])->name('index');
         Route::post('/', [App\Http\Controllers\Admin\ConfigController::class, 'store'])->name('store');
         Route::get('/reset', [App\Http\Controllers\Admin\ConfigController::class, 'reset'])->name('reset');
+    });
+
+    // Employee Management - butuh permission
+    Route::middleware(['permission:view employees'])->prefix('employees')->name('employees.')->group(function () {
+        Route::get('/', [EmployeeController::class, 'index'])->name('index');
+        Route::post('/', [EmployeeController::class, 'store'])->middleware('permission:create employees')->name('store');
+        Route::get('/{employee}/edit', [EmployeeController::class, 'edit'])->middleware('permission:edit employees')->name('edit');
+        Route::put('/{employee}', [EmployeeController::class, 'update'])->middleware('permission:edit employees')->name('update');
+        Route::delete('/{employee}', [EmployeeController::class, 'destroy'])->middleware('permission:delete employees')->name('destroy');
     });
 });
 

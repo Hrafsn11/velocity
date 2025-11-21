@@ -39,6 +39,12 @@ class RolePermissionSeeder extends Seeder
             
             // App Configuration
             'manage settings',
+            
+            // Employee Management
+            'view employees',
+            'create employees',
+            'edit employees',
+            'delete employees',
         ];
 
         foreach ($permissions as $permission) {
@@ -58,10 +64,20 @@ class RolePermissionSeeder extends Seeder
             'view roles',
             'view permissions',
             'manage settings',
+            'view employees',
+            'create employees',
+            'edit employees',
+            'delete employees',
         ]);
 
         $user = Role::create(['name' => 'User']);
         $user->givePermissionTo([
+            'view dashboard',
+        ]);
+
+        // Create Employee role
+        $employee = Role::create(['name' => 'Employee']);
+        $employee->givePermissionTo([
             'view dashboard',
         ]);
 
