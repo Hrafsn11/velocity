@@ -14,11 +14,19 @@ class EmployeeRequest extends FormRequest
     public function rules(): array
     {
         $isUpdate = $this->isMethod('PUT') || $this->isMethod('PATCH');
-        $userId = $isUpdate ? $this->route('employee') : null;
+        $userId = null;
+        if ($isUpdate) {
+            $employeeParam = $this->route('employee');
+            if ($employeeParam) {
+                $profile = \App\Models\EmployeeProfile::where('employee_id', $employeeParam)->first();
+                $userId = $profile?->user_id;
+            }
+        }
 
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $userId],
+            // When excluding the current user from unique rule, specify the id column `user_id`.
+            'email' => ['required', 'email', 'max:255', "unique:users,email,{$userId},user_id"],
             'password' => [$isUpdate ? 'nullable' : 'required', 'string', 'min:8', 'confirmed'],
             'role' => ['required', 'in:programmer,designer,qa,analyst,manager'],
             'specialization' => ['required', 'string', 'max:255'],

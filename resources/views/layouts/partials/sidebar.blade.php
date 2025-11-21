@@ -73,13 +73,6 @@
                 </ul>
             </li>
 
-            <li @class(['menu-item', 'active' => request()->routeIs('team-management.*')])>
-                <a href="{{ route('team-management.index') }}" class="menu-link">
-                    <i class="menu-icon tf-icons ti ti-users-group"></i>
-                    <div data-i18n="Team Management">Team Management</div>
-                </a>
-            </li>
-
             <li @class(['menu-item', 'active' => request()->routeIs('timeline.*')])>
                 <a href="{{ route('timeline.index') }}" class="menu-link">
                     <i class="menu-icon tf-icons ti ti-timeline"></i>
@@ -88,198 +81,35 @@
             </li>
         @endrole
 
+        @can('view employees')
+            <li class="menu-header small text-uppercase">
+                <span class="menu-header-text">HR Management</span>
+            </li>
+            <li @class(['menu-item', 'active' => request()->routeIs('employees.*')])>
+                <a href="{{ route('employees.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons ti ti-users-group"></i>
+                    <div data-i18n="Employees">Manage Employees</div>
+                </a>
+            </li>
+        @endcan
 
-        <li class="menu-header small text-uppercase">
-            <span class="menu-header-text">Your Workspace</span>
-        </li>
+        @role('User')
+            <li class="menu-header small text-uppercase">
+                <span class="menu-header-text">Workspace</span>
+            </li>
 
-        <li @class([
-            'menu-item',
-            'active open' => request()->routeIs(['sprint.*', 'tasks.*', 'reports.*']),
-        ])>
-            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons ti ti-rocket"></i>
-                <div data-i18n="Velocity">Velocity</div>
-                <div class="badge bg-label-primary rounded-pill ms-auto">Active</div>
-            </a>
+            <li @class([
+                'menu-item',
+                'active' => request()->routeIs('sprint-board.*'),
+            ])>
+                <a href="{{ route('sprint-board') }}" class="menu-link">
+                    <i class="menu-icon tf-icons ti ti-briefcase"></i>
+                    <div data-i18n="My Workspace">My Workspace</div>
+                </a>
+            </li>
+        @endrole
 
-            <ul class="menu-sub">
 
-                <li @class(['menu-item', 'active open' => request()->routeIs('sprint.*')])>
-                    <a href="javascript:void(0);" class="menu-link menu-toggle">
-                        <i class="menu-icon tf-icons ti ti-layout-kanban"></i>
-                        <div data-i18n="Agile Board">Agile Board</div>
-                    </a>
-                    <ul class="menu-sub">
-                        <li @class(['menu-item', 'active' => request()->routeIs('sprint.board')])>
-                            <a href="{{ route('sprint-board') }}" class="menu-link">
-                                <div data-i18n="Sprint Board">Sprint Board</div>
-                            </a>
-                        </li>
-                        <li @class([
-                            'menu-item',
-                            'active' => request()->routeIs('sprint.assignment'),
-                        ])>
-                            <a href="#" class="menu-link">
-                                <div data-i18n="Assignments">Sprint Assignment</div>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-
-                <li @class(['menu-item', 'active open' => request()->routeIs('tasks.*')])>
-                    <a href="javascript:void(0);" class="menu-link menu-toggle">
-                        <i class="menu-icon tf-icons ti ti-list-check"></i>
-                        <div data-i18n="Tasks & Issues">Tasks & Issues</div>
-                    </a>
-                    <ul class="menu-sub">
-                        <li @class([
-                            'menu-item',
-                            'active' => request()->routeIs('tasks.features'),
-                        ])>
-                            <a href="#" class="menu-link">
-                                <div data-i18n="Features & Tasks">Features & Tasks</div>
-                            </a>
-                        </li>
-                        <li @class(['menu-item', 'active' => request()->routeIs('tasks.bugs')])>
-                            <a href="#" class="menu-link">
-                                <div data-i18n="Bug Reports">Bug Reports</div>
-                            </a>
-                        </li>
-                        <li @class(['menu-item', 'active' => request()->routeIs('tasks.modules')])>
-                            <a href="#" class="menu-link">
-                                <div data-i18n="Module List">Module List</div>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-
-                <li @class([
-                    'menu-item',
-                    'active open' => request()->routeIs('reports.*'),
-                ])>
-                    <a href="javascript:void(0);" class="menu-link menu-toggle">
-                        <i class="menu-icon tf-icons ti ti-chart-pie-2"></i>
-                        <div data-i18n="Reports & Docs">Reports & Docs</div>
-                    </a>
-                    <ul class="menu-sub">
-                        <li @class([
-                            'menu-item',
-                            'active' => request()->routeIs('reports.progress'),
-                        ])>
-                            <a href="#" class="menu-link">
-                                <div data-i18n="Project Progress">Project Progress</div>
-                            </a>
-                        </li>
-                        <li @class(['menu-item', 'active' => request()->routeIs('reports.team')])>
-                            <a href="#" class="menu-link">
-                                <div data-i18n="Team Performance">Team Report</div>
-                            </a>
-                        </li>
-                        <li @class(['menu-item', 'active' => request()->routeIs('reports.mom')])>
-                            <a href="#" class="menu-link">
-                                <div data-i18n="Minute of Meeting">Minute of Meeting</div>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-
-            </ul>
-        </li>
-
-        <li @class([
-            'menu-item',
-            'active open' => request()->routeIs(['sprint.*', 'tasks.*', 'reports.*']),
-        ])>
-            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons ti ti-rocket"></i>
-                <div data-i18n="SYFA">SYFA</div>
-                <div class="badge bg-label-primary rounded-pill ms-auto">Active</div>
-            </a>
-
-            <ul class="menu-sub">
-
-                <li @class(['menu-item', 'active open' => request()->routeIs('sprint.*')])>
-                    <a href="javascript:void(0);" class="menu-link menu-toggle">
-                        <i class="menu-icon tf-icons ti ti-layout-kanban"></i>
-                        <div data-i18n="Agile Board">Agile Board</div>
-                    </a>
-                    <ul class="menu-sub">
-                        <li @class(['menu-item', 'active' => request()->routeIs('sprint.board')])>
-                            <a href="#" class="menu-link">
-                                <div data-i18n="Sprint Board">Sprint Board</div>
-                            </a>
-                        </li>
-                        <li @class([
-                            'menu-item',
-                            'active' => request()->routeIs('sprint.assignment'),
-                        ])>
-                            <a href="#" class="menu-link">
-                                <div data-i18n="Assignments">Sprint Assignment</div>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-
-                <li @class(['menu-item', 'active open' => request()->routeIs('tasks.*')])>
-                    <a href="javascript:void(0);" class="menu-link menu-toggle">
-                        <i class="menu-icon tf-icons ti ti-list-check"></i>
-                        <div data-i18n="Tasks & Issues">Tasks & Issues</div>
-                    </a>
-                    <ul class="menu-sub">
-                        <li @class([
-                            'menu-item',
-                            'active' => request()->routeIs('tasks.features'),
-                        ])>
-                            <a href="#" class="menu-link">
-                                <div data-i18n="Features & Tasks">Features & Tasks</div>
-                            </a>
-                        </li>
-                        <li @class(['menu-item', 'active' => request()->routeIs('tasks.bugs')])>
-                            <a href="#" class="menu-link">
-                                <div data-i18n="Bug Reports">Bug Reports</div>
-                            </a>
-                        </li>
-                        <li @class(['menu-item', 'active' => request()->routeIs('tasks.modules')])>
-                            <a href="#" class="menu-link">
-                                <div data-i18n="Module List">Module List</div>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-
-                <li @class([
-                    'menu-item',
-                    'active open' => request()->routeIs('reports.*'),
-                ])>
-                    <a href="javascript:void(0);" class="menu-link menu-toggle">
-                        <i class="menu-icon tf-icons ti ti-chart-pie-2"></i>
-                        <div data-i18n="Reports & Docs">Reports & Docs</div>
-                    </a>
-                    <ul class="menu-sub">
-                        <li @class([
-                            'menu-item',
-                            'active' => request()->routeIs('reports.progress'),
-                        ])>
-                            <a href="#" class="menu-link">
-                                <div data-i18n="Project Progress">Project Progress</div>
-                            </a>
-                        </li>
-                        <li @class(['menu-item', 'active' => request()->routeIs('reports.team')])>
-                            <a href="#" class="menu-link">
-                                <div data-i18n="Team Performance">Team Report</div>
-                            </a>
-                        </li>
-                        <li @class(['menu-item', 'active' => request()->routeIs('reports.mom')])>
-                            <a href="#" class="menu-link">
-                                <div data-i18n="Minute of Meeting">Minute of Meeting</div>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-
-            </ul>
-        </li>
 
         @canany(['view users'])
             <li class="menu-header small text-uppercase">
@@ -319,18 +149,6 @@
                 </li>
             @endcan
         @endcanany
-
-        @can('view employees')
-            <li class="menu-header small text-uppercase">
-                <span class="menu-header-text">HR Management</span>
-            </li>
-            <li @class(['menu-item', 'active' => request()->routeIs('employees.*')])>
-                <a href="{{ route('employees.index') }}" class="menu-link">
-                    <i class="menu-icon tf-icons ti ti-briefcase"></i>
-                    <div data-i18n="Employees">Manage Employees</div>
-                </a>
-            </li>
-        @endcan
 
         @can('manage settings')
             <li class="menu-header small text-uppercase">

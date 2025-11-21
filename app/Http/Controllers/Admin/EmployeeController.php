@@ -42,7 +42,7 @@ class EmployeeController extends Controller
                 'success' => true,
                 'message' => 'Employee created successfully!',
                 'data' => [
-                    'id' => $employee->id,
+                    'user_id' => $employee->user_id,
                     'name' => $employee->name,
                     'email' => $employee->email,
                     'avatar' => $employee->avatar,
@@ -68,10 +68,10 @@ class EmployeeController extends Controller
     /**
      * Show the form for editing the specified employee.
      */
-    public function edit($id)
+    public function edit($employee)
     {
         try {
-            $employee = $this->employeeService->findEmployee($id);
+            $employee = $this->employeeService->findEmployee($employee);
 
             if (!$employee) {
                 return response()->json([
@@ -83,7 +83,7 @@ class EmployeeController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'id' => $employee->id,
+                    'user_id' => $employee->user_id,
                     'name' => $employee->name,
                     'email' => $employee->email,
                     'role' => $employee->employeeProfile->role,
@@ -105,10 +105,10 @@ class EmployeeController extends Controller
     /**
      * Update the specified employee.
      */
-    public function update(EmployeeRequest $request, $id)
+    public function update(EmployeeRequest $request, $employee)
     {
         try {
-            $employee = $this->employeeService->findEmployee($id);
+            $employee = $this->employeeService->findEmployee($employee);
 
             if (!$employee) {
                 return response()->json([
@@ -123,7 +123,7 @@ class EmployeeController extends Controller
                 'success' => true,
                 'message' => 'Employee updated successfully!',
                 'data' => [
-                    'id' => $updatedEmployee->id,
+                    'user_id' => $updatedEmployee->user_id,
                     'name' => $updatedEmployee->name,
                     'email' => $updatedEmployee->email,
                     'avatar' => $updatedEmployee->avatar,
@@ -149,10 +149,10 @@ class EmployeeController extends Controller
     /**
      * Remove the specified employee.
      */
-    public function destroy($id)
+    public function destroy($employee)
     {
         try {
-            $employee = $this->employeeService->findEmployee($id);
+            $employee = $this->employeeService->findEmployee($employee);
 
             if (!$employee) {
                 return response()->json([

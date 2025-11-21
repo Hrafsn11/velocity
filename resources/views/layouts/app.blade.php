@@ -34,6 +34,17 @@
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/typeahead-js/typeahead.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/apex-charts/apex-charts.css') }}" />
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/flatpickr/flatpickr.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/jkanban/jkanban.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/select2/select2.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/flatpickr/flatpickr.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/quill/typography.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/quill/katex.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/quill/editor.css') }}" />
+
+    <link rel="stylesheet" href="{{ asset('assets/vendor/css/pages/app-kanban.css') }}" />
     <script src="{{ asset('assets/vendor/js/template-customizer.js') }}"></script>
 
     @stack('styles')
@@ -80,6 +91,14 @@
     <script src="{{ asset('assets/vendor/libs/typeahead-js/typeahead.js') }}"></script>
     <script src="{{ asset('assets/vendor/js/menu.js') }}"></script>
 
+    <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
+    <script src="{{ asset('assets/vendor/libs/flatpickr/flatpickr.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/jkanban/jkanban.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/flatpickr/flatpickr.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/quill/katex.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/quill/quill.js') }}"></script>
     <script src="{{ asset('assets/js/main.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/sweetalert2/sweetalert2.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>

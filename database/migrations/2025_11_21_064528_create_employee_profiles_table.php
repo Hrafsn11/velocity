@@ -12,8 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('employee_profiles', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->ulid('employee_id')->primary();
+            // Ensure foreign key references users.user_id (ULID primary key)
+            $table->foreignUlid('user_id')->constrained('users', 'user_id')->onDelete('cascade');
             $table->enum('role', ['programmer', 'designer', 'qa', 'analyst', 'manager'])->default('programmer');
             $table->string('specialization');
             $table->enum('level', ['intern', 'junior', 'middle', 'senior', 'lead'])->default('junior');

@@ -20,6 +20,6 @@ class DashboardController extends Controller
             'userRoles' => auth()->user()->getRoleNames(),
         ];
 
-        return view('admin.dashboard.index', $data);
+        return view('dashboard', $data);
     }
 }
