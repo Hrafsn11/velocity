@@ -2,11 +2,23 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class EmployeeProfile extends Model
 {
+    use HasFactory, HasUlids;
+
+    protected $table = 'employee_profiles';
+
+    protected $primaryKey = 'employee_id';
+
+    public $incrementing = false;
+
+    protected $keyType = 'string';
+
     protected $fillable = [
         'user_id',
         'role',
@@ -26,7 +38,9 @@ class EmployeeProfile extends Model
      */
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        // Specify the foreign key on this table and the owner's key on users table.
+        // This ensures Eloquent sets `user_id` (not `user_user_id`) when creating via relation.
+        return $this->belongsTo(User::class, 'user_id', 'user_id');
     }
 
     /**

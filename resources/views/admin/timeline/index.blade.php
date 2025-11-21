@@ -3,9 +3,6 @@
 @section('title', 'Global Timeline - Roadmap')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/apex-charts/apex-charts.css') }}" />
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/flatpickr/flatpickr.css') }}" />
     <style>
         /* Menghilangkan border event agar lebih bersih */
         .fc-event {
@@ -118,12 +115,6 @@
 @endsection
 
 @push('scripts')
-    <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
-
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
-
-    <script src="{{ asset('assets/vendor/libs/flatpickr/flatpickr.js') }}"></script>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 

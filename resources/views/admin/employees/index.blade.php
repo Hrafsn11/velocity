@@ -112,7 +112,7 @@
             </thead>
             <tbody id="employeeTableBody">
                 @foreach ($employees as $employee)
-                <tr data-employee-id="{{ $employee['id'] }}">
+                <tr data-employee-id="{{ $employee['employee_id'] }}">
                     <td>
                         <div class="d-flex justify-content-start align-items-center">
                             <div class="avatar-wrapper">
@@ -150,12 +150,12 @@
                     <td>
                         <div class="d-flex align-items-center">
                             @can('edit employees')
-                            <a href="javascript:void(0);" class="text-body me-2 btn-edit-employee" data-id="{{ $employee['id'] }}">
+                            <a href="javascript:void(0);" class="text-body me-2 btn-edit-employee" data-id="{{ $employee['employee_id'] }}">
                                 <i class="ti ti-edit ti-sm"></i>
                             </a>
                             @endcan
                             @can('delete employees')
-                            <a href="javascript:void(0);" class="text-body btn-delete-employee" data-id="{{ $employee['id'] }}">
+                            <a href="javascript:void(0);" class="text-body btn-delete-employee" data-id="{{ $employee['employee_id'] }}">
                                 <i class="ti ti-trash ti-sm text-danger"></i>
                             </a>
                             @endcan
@@ -343,14 +343,18 @@ const EmployeeManager = (() => {
 
     const showAddModal = () => {
         resetForm();
-        $('#employeeId, #formMethod, #employeeModalTitle').val(['', 'POST', '']).last().text('Add New Employee');
+        $('#employeeId').val('');
+        $('#formMethod').val('POST');
+        $('#employeeModalTitle').text('Add New Employee');
         togglePasswordRequired(true);
         modal.show();
     };
 
     const showEditModal = async id => {
         resetForm();
-        $('#employeeId, #formMethod, #employeeModalTitle').val([id, 'PUT', '']).last().text('Edit Employee');
+        $('#employeeId').val(id);
+        $('#formMethod').val('PUT');
+        $('#employeeModalTitle').text('Edit Employee');
         togglePasswordRequired(false);
 
         try {

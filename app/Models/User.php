@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -11,13 +12,20 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, Notifiable, HasRoles, HasUlids;
 
     /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
+
+    protected $primaryKey = 'user_id';
+
+    public $incrementing = false;
+
+    protected $keyType = 'string';
+
     protected $fillable = [
         'name',
         'email',
@@ -53,6 +61,8 @@ class User extends Authenticatable
      */
     public function employeeProfile()
     {
-        return $this->hasOne(EmployeeProfile::class);
+        // Explicitly set foreign key and local key to `user_id` because
+        // the users table uses ULID primary key named `user_id` instead of `id`.
+        return $this->hasOne(EmployeeProfile::class, 'user_id', 'user_id');
     }
 }

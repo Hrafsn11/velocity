@@ -5,7 +5,6 @@ use App\Http\Controllers\TimelineController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\SprintController;
-use App\Http\Controllers\TeamManagementController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
@@ -25,8 +24,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/workspaces', function () {
         return view('admin.workspace.index');
     })->name('workspaces.index');
-
-    Route::get('/team-management', [TeamManagementController::class, 'index'])->name('team-management.index');
 
     Route::get('/timeline', [TimelineController::class, 'index'])->name('timeline.index');
 

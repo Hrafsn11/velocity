@@ -20,20 +20,23 @@ class EmployeeService
             ->latest()
             ->get()
             ->map(function ($user) {
+                $profile = $user->employeeProfile;
+
                 return [
-                    'id' => $user->id,
+                    // employee_id comes from the related employee profile (ULID)
+                    'employee_id' => $profile->employee_id ?? null,
                     'name' => $user->name,
                     'email' => $user->email,
                     'avatar' => $user->avatar ?? '/assets/img/avatars/1.png',
-                    'role' => $user->employeeProfile->role,
-                    'specialization' => $user->employeeProfile->specialization,
-                    'level' => $user->employeeProfile->level,
-                    'skills' => $user->employeeProfile->skills,
-                    'status' => $user->employeeProfile->status,
-                    'phone' => $user->employeeProfile->phone,
-                    'role_icon' => $user->employeeProfile->role_icon,
-                    'level_color' => $user->employeeProfile->level_color,
-                    'status_badge' => $user->employeeProfile->status_badge,
+                    'role' => $profile->role ?? null,
+                    'specialization' => $profile->specialization ?? null,
+                    'level' => $profile->level ?? null,
+                    'skills' => $profile->skills ?? [],
+                    'status' => $profile->status ?? null,
+                    'phone' => $profile->phone ?? null,
+                    'role_icon' => $profile?->role_icon,
+                    'level_color' => $profile?->level_color,
+                    'status_badge' => $profile?->status_badge,
                     'projects_count' => 0, // Will be implemented when project module is added
                 ];
             });
@@ -165,8 +168,17 @@ class EmployeeService
     /**
      * Find employee by user ID.
      */
-    public function findEmployee(int $userId): ?User
+    /**
+     * Find employee by employee_id (ULID) and return the related User with profile.
+     */
+    public function findEmployee(string $employee_id): ?User
     {
-        return User::with('employeeProfile')->find($userId);
+        $profile = EmployeeProfile::with('user')->where('employee_id', $employee_id)->first();
+
+        if (!$profile || !$profile->user) {
+            return null;
+        }
+
+        return $profile->user->load('employeeProfile');
     }
 }
