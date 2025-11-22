@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ProjectDetailController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TimelineController;
 use App\Http\Controllers\Admin\RoleController;
@@ -16,7 +17,7 @@ Route::get('/', function () {
 });
 
 // Protected routes (memerlukan login)
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'check.account.status'])->group(function () {
 
     // Dashboard - semua user bisa akses
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -29,6 +30,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/sprint-board', [SprintController::class, 'board'])->name('sprint-board');
 
+    Route::get('/workspace/velocity', [ProjectDetailController::class, 'show'])->name('workspace.detail');
+
     // Profile Management
     Route::prefix('profile')->name('profile.')->controller(AdminProfileController::class)->group(function () {
         Route::get('/', 'edit')->name('edit');
@@ -40,6 +43,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // User Management - butuh permission
     Route::middleware(['permission:view users'])->group(function () {
         Route::resource('users', UserController::class);
+        Route::post('/users/{user}/suspend', [UserController::class, 'suspend'])->name('users.suspend')->middleware('permission:edit users');
+        Route::post('/users/{user}/activate', [UserController::class, 'activate'])->name('users.activate')->middleware('permission:edit users');
+        Route::post('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password')->middleware('permission:edit users');
     });
 
     // Role Management - butuh permission

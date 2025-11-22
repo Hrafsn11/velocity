@@ -113,7 +113,7 @@
 
         @canany(['view users'])
             <li class="menu-header small text-uppercase">
-                <span class="menu-header-text">People & Teams</span>
+                <span class="menu-header-text">User Management</span>
             </li>
 
             @can('view users')

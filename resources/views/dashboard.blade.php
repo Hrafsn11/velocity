@@ -120,11 +120,11 @@
                                     <td>
                                         <div class="d-flex justify-content-start align-items-center">
                                             <div class="avatar me-2">
-                                                @if($user->avatar)
+                                                @if($user->avatar && file_exists(storage_path('app/public/' . $user->avatar)))
                                                 <img src="{{ asset('storage/' . $user->avatar) }}" alt="Avatar" class="rounded-circle">
                                                 @else
                                                 <span class="avatar-initial rounded-circle bg-label-primary">
-                                                    {{ strtoupper(substr($user->name, 0, 2)) }}
+                                                    {{ collect(explode(' ', $user->name))->map(fn($word) => strtoupper(substr($word, 0, 1)))->take(2)->join('') }}
                                                 </span>
                                                 @endif
                                             </div>

@@ -1,0 +1,253 @@
+/**
+ * Workspace Project Detail Styles
+ * Following Vuexy template conventions and Bootstrap best practices
+ */
+
+/* ========================================
+   CSS Custom Properties (Variables)
+   ======================================== */
+:root {
+    --workspace-tab-height-offset: 350px;
+    --workspace-board-min-height: 500px;
+    --workspace-calendar-min-height: 600px;
+    --workspace-sidebar-width: 260px;
+    --workspace-avatar-overlap: -0.8rem;
+    --workspace-scrollbar-width: 6px;
+    --workspace-transition-speed: 0.3s;
+}
+
+/* ========================================
+   Navigation Tabs Enhancement
+   ======================================== */
+.card .nav-tabs {
+    border-bottom: none;
+}
+
+.card .nav-tabs .nav-link {
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: #6f6b7d;
+    border-radius: 0;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.card .nav-tabs .nav-link:hover {
+    color: var(--bs-primary);
+    border-color: transparent;
+}
+
+.card .nav-tabs .nav-link.active {
+    color: var(--bs-primary) !important;
+    border-bottom: 2px solid var(--bs-primary);
+    background: transparent;
+}
+
+/* ========================================
+   Avatar Group Component
+   ======================================== */
+.avatar-group .avatar {
+    margin-left: var(--workspace-avatar-overlap);
+    transition: all 0.2s ease;
+}
+
+.avatar-group .avatar:first-child {
+    margin-left: 0;
+}
+
+.avatar-group .avatar:hover {
+    z-index: 10;
+    transform: translateY(-3px);
+}
+
+.avatar-group .avatar img,
+.avatar-group .avatar .avatar-initial {
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"] .avatar-group .avatar img,
+[data-theme="dark"] .avatar-group .avatar .avatar-initial {
+    border-color: #2f3349;
+}
+
+/* ========================================
+   Kanban Board Tab Layout
+   ======================================== */
+#tab-board {
+    height: calc(100vh - var(--workspace-tab-height-offset));
+    min-height: var(--workspace-board-min-height);
+    overflow: hidden;
+}
+
+.app-kanban {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+.kanban-wrapper {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 10px;
+    align-items: flex-start;
+}
+
+.kanban-board {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    max-height: 100%;
+}
+
+.kanban-drag {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 100px;
+    padding-right: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: #dbdade transparent;
+}
+
+.kanban-drag::-webkit-scrollbar {
+    width: var(--workspace-scrollbar-width);
+}
+
+.kanban-drag::-webkit-scrollbar-thumb {
+    background-color: #dbdade;
+    border-radius: 4px;
+}
+
+/* ========================================
+   Calendar Tab Layout
+   ======================================== */
+#tab-calendar {
+    height: calc(100vh - var(--workspace-tab-height-offset));
+    min-height: var(--workspace-calendar-min-height);
+    overflow: hidden;
+}
+
+.app-calendar-wrapper {
+    border: 0 !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden;
+}
+
+#tab-calendar.show .app-calendar-wrapper {
+    display: flex !important;
+    flex-direction: row !important;
+    height: 100%;
+}
+
+/* ========================================
+   Calendar Sidebar
+   ======================================== */
+.app-calendar-sidebar {
+    position: relative !important;
+    transform: none !important;
+    left: auto !important;
+    width: var(--workspace-sidebar-width) !important;
+    flex-shrink: 0;
+    height: 100%;
+    overflow-y: auto;
+    border-right: 1px solid #dbdade;
+    z-index: 2;
+    background: #fff;
+    transition: all var(--workspace-transition-speed) ease;
+}
+
+/* ========================================
+   Calendar Content Area
+   ======================================== */
+.app-calendar-content {
+    flex-grow: 1;
+    width: 0;
+    height: 100%;
+    overflow-y: auto;
+    position: relative;
+}
+
+#calendar {
+    min-height: 100%;
+}
+
+/* Fix FullCalendar rendering issues */
+.fc {
+    width: 100%;
+}
+
+.fc-view-harness {
+    height: 100% !important;
+}
+
+.fc .fc-toolbar {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.fc .fc-toolbar-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+/* ========================================
+   Responsive Breakpoints
+   ======================================== */
+
+/* Mobile (<992px) */
+@media (max-width: 991.98px) {
+    .app-calendar-wrapper {
+        position: relative;
+    }
+
+    .app-calendar-sidebar {
+        position: absolute !important;
+        left: calc(-1 * var(--workspace-sidebar-width)) !important;
+        height: 100%;
+        z-index: 5;
+    }
+
+    .app-calendar-sidebar.show {
+        left: 0 !important;
+    }
+
+    .btn-toggle-calendar-sidebar {
+        display: inline-block;
+    }
+}
+
+/* Desktop (>=992px) */
+@media (min-width: 992px) {
+    .app-calendar-sidebar {
+        display: block !important;
+    }
+
+    .btn-toggle-calendar-sidebar {
+        display: none;
+    }
+}
+
+/* ========================================
+   Dark Mode Support
+   ======================================== */
+[data-theme="dark"] .app-calendar-sidebar {
+    background: #2f3349;
+    border-right-color: #43465a;
+}
+
+[data-theme="dark"] .kanban-drag {
+    scrollbar-color: #43465a transparent;
+}
+
+[data-theme="dark"] .kanban-drag::-webkit-scrollbar-thumb {
+    background-color: #43465a;
+}
