@@ -43,7 +43,7 @@
                             <i class="ti ti-dots-vertical text-muted"></i>
                         </button>
                         <div class="dropdown-menu dropdown-menu-end" aria-labelledby="ws1">
-                            <a class="dropdown-item" href="javascript:void(0);">View Details</a>
+                            <a class="dropdown-item" href="{{ route('workspace.detail') }}">View Details</a>
                             <a class="dropdown-item" href="javascript:void(0);">Edit Workspace</a>
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item text-danger" href="javascript:void(0);">Archive</a>

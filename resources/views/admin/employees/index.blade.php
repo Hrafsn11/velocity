@@ -5,7 +5,8 @@
 @section('content')
 <div class="row mb-4">
     <div class="col-12">
-        <h4 class="fw-bold mb-0"><span class="text-muted fw-light">HR Management /</span> Manage Employees</h4>
+        <h4 class="fw-bold mb-0"><span class="text-muted fw-light">HR Management /</span> Employee Resources</h4>
+        <p class="text-muted mt-1">Manage internal team members, skills tracking, and resource allocation for projects</p>
     </div>
 </div>
 
@@ -15,11 +16,11 @@
             <div class="card-body">
                 <div class="d-flex align-items-start justify-content-between">
                     <div class="content-left">
-                        <span>Total Employees</span>
+                        <span>Total Resources</span>
                         <div class="d-flex align-items-end mt-2">
                             <h4 class="mb-0 me-2" id="totalEmployees">{{ $stats['total'] }}</h4>
                         </div>
-                        <p class="mb-0 text-muted">Total headcount</p>
+                        <p class="mb-0 text-muted">Team members</p>
                     </div>
                     <span class="avatar p-2 rounded bg-label-primary">
                         <i class="ti ti-users ti-sm"></i>
@@ -38,7 +39,7 @@
                         <div class="d-flex align-items-end mt-2">
                             <h4 class="mb-0 me-2 text-success" id="availableEmployees">{{ $stats['available'] }}</h4>
                         </div>
-                        <p class="mb-0 text-muted">Ready to work</p>
+                        <p class="mb-0 text-muted">Can be assigned</p>
                     </div>
                     <span class="avatar p-2 rounded bg-label-success">
                         <i class="ti ti-user-check ti-sm"></i>
@@ -53,14 +54,14 @@
             <div class="card-body">
                 <div class="d-flex align-items-start justify-content-between">
                     <div class="content-left">
-                        <span>Unavailable</span>
+                        <span>Busy</span>
                         <div class="d-flex align-items-end mt-2">
-                            <h4 class="mb-0 me-2 text-secondary" id="unavailableEmployees">{{ $stats['offline'] }}</h4>
+                            <h4 class="mb-0 me-2 text-warning" id="unavailableEmployees">{{ $stats['offline'] }}</h4>
                         </div>
-                        <p class="mb-0 text-muted">On leave / offline</p>
+                        <p class="mb-0 text-muted">On project/leave</p>
                     </div>
-                    <span class="avatar p-2 rounded bg-label-secondary">
-                        <i class="ti ti-user-off ti-sm"></i>
+                    <span class="avatar p-2 rounded bg-label-warning">
+                        <i class="ti ti-user-exclamation ti-sm"></i>
                     </span>
                 </div>
             </div>
@@ -72,7 +73,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-start justify-content-between">
                     <div class="content-left">
-                        <span>Projects</span>
+                        <span>Active Projects</span>
                         <div class="d-flex align-items-end mt-2">
                             <h4 class="mb-0 me-2 text-info">N/A</h4>
                         </div>
@@ -89,7 +90,10 @@
 
 <div class="card">
     <div class="card-header border-bottom d-flex justify-content-between align-items-center">
-        <h5 class="card-title mb-0">Employee List</h5>
+        <div>
+            <h5 class="card-title mb-1">Employee Resources & Skills</h5>
+            <p class="text-muted small mb-0">Track team members, skills, availability, and assign to projects</p>
+        </div>
         <div class="d-flex align-items-center gap-2">
             @can('create employees')
             <button class="btn btn-primary" type="button" id="btnAddEmployee">
@@ -103,10 +107,11 @@
         <table class="table table-hover border-top" id="employeesTable">
             <thead>
                 <tr>
-                    <th style="min-width: 250px;">Employee</th>
-                    <th style="min-width: 200px;">Role & Specialization</th>
-                    <th style="min-width: 200px;">Main Skills</th>
-                    <th>Status</th>
+                    <th style="min-width: 250px;">Team Member</th>
+                    <th style="min-width: 200px;">Role & Expertise</th>
+                    <th style="min-width: 200px;">Technical Skills</th>
+                    <th>Availability</th>
+                    <th style="min-width: 120px;">Projects</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -117,7 +122,13 @@
                         <div class="d-flex justify-content-start align-items-center">
                             <div class="avatar-wrapper">
                                 <div class="avatar avatar-sm me-3">
-                                    <img src="{{ asset($employee['avatar']) }}" alt="Avatar" class="rounded-circle object-fit-cover">
+                                    @if($employee['avatar'])
+                                    <img src="{{ asset('storage/' . $employee['avatar']) }}" alt="Avatar" class="rounded-circle object-fit-cover">
+                                    @else
+                                    <span class="avatar-initial rounded-circle bg-label-primary">
+                                        {{ collect(explode(' ', $employee['name']))->map(fn($word) => strtoupper(substr($word, 0, 1)))->take(2)->join('') }}
+                                    </span>
+                                    @endif
                                 </div>
                             </div>
                             <div class="d-flex flex-column">
@@ -146,6 +157,15 @@
                     </td>
                     <td>
                         <span class="badge {{ $employee['status_badge'] }}">{{ ucfirst($employee['status']) }}</span>
+                    </td>
+                    <td>
+                        <div class="d-flex flex-column">
+                            <span class="text-muted small">
+                                <i class="ti ti-briefcase ti-xs me-1"></i>
+                                {{ $employee['projects_count'] }} active
+                            </span>
+                            <small class="text-muted">Feature coming soon</small>
+                        </div>
                     </td>
                     <td>
                         <div class="d-flex align-items-center">
@@ -191,15 +211,19 @@
                             <input type="email" class="form-control" id="employeeEmail" name="email" placeholder="john@velocity.com" required>
                             <div class="invalid-feedback"></div>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label" for="employeePassword">Password <span class="text-danger" id="passwordRequired">*</span></label>
-                            <input type="password" class="form-control" id="employeePassword" name="password" placeholder="Min 8 characters">
-                            <div class="invalid-feedback"></div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label" for="employeePasswordConfirm">Confirm Password <span class="text-danger" id="passwordConfirmRequired">*</span></label>
-                            <input type="password" class="form-control" id="employeePasswordConfirm" name="password_confirmation" placeholder="Re-type password">
-                            <div class="invalid-feedback"></div>
+                        <div class="col-12" id="employeePasswordRow">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label" for="employeePassword">Password <span class="text-danger" id="passwordRequired">*</span></label>
+                                    <input type="password" class="form-control" id="employeePassword" name="password" placeholder="Min 8 characters">
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="employeePasswordConfirm">Confirm Password <span class="text-danger" id="passwordConfirmRequired">*</span></label>
+                                    <input type="password" class="form-control" id="employeePasswordConfirm" name="password_confirmation" placeholder="Re-type password">
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label" for="employeeRole">Role Category <span class="text-danger">*</span></label>
@@ -286,6 +310,7 @@ const EmployeeManager = (() => {
         invalidFeedback: '.invalid-feedback',
         spinner: '.spinner-border',
         passwordFields: '#employeePassword, #employeePasswordConfirm',
+        passwordRow: '#employeePasswordRow',
         passwordLabels: '#passwordRequired, #passwordConfirmRequired'
     };
 
@@ -324,8 +349,9 @@ const EmployeeManager = (() => {
     };
 
     const togglePasswordRequired = required => {
-        $(SELECTORS.passwordFields).attr('required', required);
+        $(SELECTORS.passwordFields).attr('required', required).val('');
         $(SELECTORS.passwordLabels).toggle(required);
+        $(SELECTORS.passwordRow).toggle(required);
     };
 
     const toggleButton = loading => 

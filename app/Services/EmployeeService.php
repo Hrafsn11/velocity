@@ -27,7 +27,7 @@ class EmployeeService
                     'employee_id' => $profile->employee_id ?? null,
                     'name' => $user->name,
                     'email' => $user->email,
-                    'avatar' => $user->avatar ?? '/assets/img/avatars/1.png',
+                    'avatar' => $user->avatar && file_exists(storage_path('app/public/' . $user->avatar)) ? $user->avatar : null,
                     'role' => $profile->role ?? null,
                     'specialization' => $profile->specialization ?? null,
                     'level' => $profile->level ?? null,
@@ -67,12 +67,20 @@ class EmployeeService
         try {
             DB::beginTransaction();
 
+            // Check if email already exists
+            if (User::where('email', $data['email'])->exists()) {
+                throw new \Exception('Email address already exists in the system.');
+            }
+
+            // Store plain password for email
+            $plainPassword = $data['password'];
+
             // Create user account
             $user = User::create([
                 'name' => $data['name'],
                 'email' => $data['email'],
-                'password' => Hash::make($data['password']),
-                'avatar' => '/assets/img/avatars/1.png',
+                'password' => Hash::make($plainPassword),
+                'avatar' => null,
                 'email_verified_at' => now(),
             ]);
 
@@ -89,8 +97,11 @@ class EmployeeService
                 'phone' => $data['phone'] ?? null,
             ]);
 
-            // Assign default Employee role
+            // Assign Employee role
             $user->assignRole('Employee');
+
+            // Send welcome email with credentials
+            $user->notify(new \App\Notifications\WelcomeUserNotification($plainPassword, true));
 
             DB::commit();
 
@@ -109,16 +120,11 @@ class EmployeeService
         try {
             DB::beginTransaction();
 
-            // Update user data
+            // Update user data (NO PASSWORD UPDATE - managed separately)
             $userData = [
                 'name' => $data['name'],
                 'email' => $data['email'],
             ];
-
-            // Update password if provided
-            if (!empty($data['password'])) {
-                $userData['password'] = Hash::make($data['password']);
-            }
 
             $user->update($userData);
 
