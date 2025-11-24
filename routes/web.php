@@ -6,6 +6,7 @@ use App\Http\Controllers\TimelineController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\SprintController;
+use App\Http\Controllers\WorkspaceController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
@@ -22,9 +23,8 @@ Route::middleware(['auth', 'verified', 'check.account.status'])->group(function 
     // Dashboard - semua user bisa akses
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::get('/workspaces', function () {
-        return view('admin.workspace.index');
-    })->name('workspaces.index');
+    Route::resource('workspaces', WorkspaceController::class)
+        ->only(['index', 'store', 'update', 'destroy']);
 
     Route::get('/timeline', [TimelineController::class, 'index'])->name('timeline.index');
 
