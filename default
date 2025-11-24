@@ -12,6 +12,11 @@ server {
     
     # Blok untuk menangani semua request
     location / {
+        # Redirect HTTP ke HTTPS
+        if ($http_x_forwarded_proto = "http") {
+            return 301 https://$host$request_uri;
+        }
+        
         # Jika file atau direktori tidak ditemukan, alihkan ke index.php
         try_files $uri $uri/ /index.php?$query_string;
     }
