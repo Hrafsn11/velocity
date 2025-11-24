@@ -1,0 +1,26 @@
+server {
+    # Nginx akan mendengarkan koneksi dari Azure App Service di port 8080
+    listen 8080 default_server;
+    
+    # ROOT harus diarahkan ke folder PUBLIC Laravel
+    root /home/site/wwwroot/public;
+    index index.php index.html index.htm;
+
+    # Blok untuk menangani semua request
+    location / {
+        # Jika file/folder tidak ditemukan, alihkan ke index.php (entry point Laravel)
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    # Blok untuk memproses file PHP menggunakan PHP-FPM
+    location ~ \.php$ {
+        # Lokasi socket PHP-FPM (harus disesuaikan dengan container PHP Azure)
+        fastcgi_pass unix:/var/run/php/php8.2-fpm.sock; 
+        
+        # Parameter standar FastCGI
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+    }
+}
