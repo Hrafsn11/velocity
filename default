@@ -1,18 +1,31 @@
 server {
+    # Nginx akan mendengarkan port 8080, yang merupakan port internal Azure
     listen 8080 default_server;
+    listen [::]:8080 default_server;
+    
+    # Root aplikasi diarahkan ke folder PUBLIC
     root /home/site/wwwroot/public;
     index index.php index.html index.htm;
 
+    # Setel besar maksimum body untuk upload file
+    client_max_body_size 128M;
+    
+    # Blok untuk menangani semua request
     location / {
+        # Jika file atau direktori tidak ditemukan, alihkan ke index.php
         try_files $uri $uri/ /index.php?$query_string;
     }
 
+    # Blok untuk memproses file PHP menggunakan PHP-FPM
     location ~ \.php$ {
-        # Ubah fastcgi_pass ke host lokal (127.0.0.1) dan port 9000
+        # Menggunakan IP lokal (127.0.0.1) dan port 9000
+        # Ini adalah metode yang paling andal untuk App Service Linux
         fastcgi_pass 127.0.0.1:9000;
-
+        
         fastcgi_index index.php;
         include fastcgi_params;
+        
+        # Parameter wajib untuk memberitahu PHP-FPM di mana lokasi file script berada
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
         fastcgi_param PATH_INFO $fastcgi_path_info;
     }
