@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Support\Str;
+
 if (!function_exists('app_config')) {
     /**
      * Get application configuration value.
@@ -44,6 +46,83 @@ if (!function_exists('app_config')) {
         $config['secondary_color_shadow'] = hex2hsl($config['secondary_hex'], -15, 50);
 
         return $config[$key] ?? "";
+    }
+}
+
+if (!function_exists('workspace_image_url')) {
+    /**
+     * Resolve public URL for workspace image stored under storage/app/public.
+     */
+    function workspace_image_url(?string $imagePath): ?string
+    {
+        if (!$imagePath) {
+            return null;
+        }
+
+        $publicPath = 'storage/' . ltrim($imagePath, '/');
+
+        return file_exists(public_path($publicPath)) ? asset($publicPath) : null;
+    }
+}
+
+if (!function_exists('workspace_initials')) {
+    /**
+     * Generate initials (max 2 chars) from given text.
+     */
+    function workspace_initials(?string $text, int $length = 2): string
+    {
+        if (!$text) {
+            return 'NA';
+        }
+
+        $initials = Str::of($text)
+            ->squish()
+            ->split('/\s+/')
+            ->map(fn ($segment) => Str::substr($segment, 0, 1))
+            ->join('');
+
+        return Str::upper(Str::substr($initials, 0, $length));
+    }
+}
+
+if (!function_exists('workspace_modal_context')) {
+    /**
+     * Prepare modal payload for create/edit workspace form.
+     *
+     * @param  string  $modalId
+     * @param  string  $title
+     * @param  string  $action
+     * @param  string  $method
+     * @param  \App\Models\Workspace|null  $workspace
+     * @param  \Illuminate\Support\Collection|\Illuminate\Support\Collection[]  $employees
+     * @param  array|\UnitEnum[]  $statuses
+     * @return array<string,mixed>
+     */
+    function workspace_modal_context(
+        string $modalId,
+        string $title,
+        string $action,
+        string $method,
+        $workspace,
+        $employees,
+        $statuses
+    ): array {
+        $managerValue = old('manager_id', optional($workspace)->manager_id);
+        $memberValues = old('members', $workspace?->members?->pluck('employee_id')->all() ?? []);
+        $statusValue = old('status', $workspace?->status?->value ?? \App\Enums\WorkspaceStatus::PLANNING->value);
+
+        return compact(
+            'modalId',
+            'title',
+            'action',
+            'method',
+            'workspace',
+            'employees',
+            'statuses',
+            'managerValue',
+            'memberValues',
+            'statusValue'
+        );
     }
 }
 
