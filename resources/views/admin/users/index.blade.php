@@ -136,8 +136,8 @@
                     <td>
                         <div class="d-flex align-items-center">
                             <div class="avatar avatar-sm me-3">
-                                @if($user->avatar && file_exists(storage_path('app/public/' . $user->avatar)))
-                                <img src="{{ asset('storage/' . $user->avatar) }}" alt="Avatar" class="rounded-circle">
+                                @if($user->avatar_url)
+                                <img src="{{ $user->avatar_url }}" alt="Avatar" class="rounded-circle">
                                 @else
                                 <span class="avatar-initial rounded-circle bg-label-primary">
                                     {{ collect(explode(' ', $user->name))->map(fn($word) => strtoupper(substr($word, 0, 1)))->take(2)->join('') }}

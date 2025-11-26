@@ -93,16 +93,16 @@
             </li>
         @endcan
 
-        @role('User')
+        @role('Employee')
             <li class="menu-header small text-uppercase">
                 <span class="menu-header-text">Workspace</span>
             </li>
 
             <li @class([
                 'menu-item',
-                'active' => request()->routeIs('sprint-board.*'),
+                'active' => request()->routeIs('workspaces.index'),
             ])>
-                <a href="{{ route('sprint-board') }}" class="menu-link">
+                <a href="{{ route('workspaces.index') }}" class="menu-link">
                     <i class="menu-icon tf-icons ti ti-briefcase"></i>
                     <div data-i18n="My Workspace">My Workspace</div>
                 </a>

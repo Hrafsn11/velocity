@@ -72,7 +72,11 @@
         <div class="card mb-4">
             <div class="profile-header text-center">
                 <div class="d-flex justify-content-center mb-3">
-                    <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) . '?t=' . time() : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&size=200&background=667eea&color=fff&bold=true' }}" 
+                    @php
+                        $defaultAvatar = 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&size=200&background=667eea&color=fff&bold=true';
+                        $avatarSrc = $user->avatar_url ?? $defaultAvatar;
+                    @endphp
+                    <img src="{{ $avatarSrc . '?t=' . time() }}" 
                          alt="user-avatar" 
                          class="rounded-circle profile-avatar" 
                          id="uploadedAvatar">

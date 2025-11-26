@@ -15,10 +15,12 @@
                 <input type="text" class="form-control" placeholder="Search workspace..." aria-label="Search..."
                     aria-describedby="workspace-search-addon" />
             </div>
+            @unlessrole('Employee')
             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#workspace-create-modal">
                 <i class="ti ti-plus me-1"></i>
                 <span class="d-none d-sm-inline-block">New Workspace</span>
             </button>
+            @endunlessrole
         </div>
     </div>
 
@@ -62,17 +64,21 @@
                             </button>
                             <div class="dropdown-menu dropdown-menu-end"
                                 aria-labelledby="workspace-menu-{{ $workspace->workspace_id }}">
+                                <a class="dropdown-item" href="{{ route('workspaces.show', $workspace) }}">Open</a>
+                                @unlessrole('Employee')
+                                <div class="dropdown-divider"></div>
                                 <button class="dropdown-item" data-bs-toggle="modal"
                                     data-bs-target="#workspace-edit-modal-{{ $workspace->workspace_id }}">
                                     Edit Workspace
                                 </button>
-                                <div class="dropdown-divider"></div>
+                                
                                 <form action="{{ route('workspaces.destroy', $workspace) }}" method="POST"
                                     onsubmit="return confirm('Arsipkan workspace ini?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="dropdown-item text-danger">Archive</button>
                                 </form>
+                                @endunlessrole
                             </div>
                         </div>
                     </div>
@@ -121,20 +127,31 @@
             </div>
         @empty
             <div class="col-12">
-                <div class="card border border-dashed text-center p-5">
-                    <div class="card-body">
-                        <h5 class="mb-1">Belum ada workspace</h5>
-                        <p class="text-muted mb-3">Mulai dengan membuat workspace pertama Anda.</p>
-                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                            data-bs-target="#workspace-create-modal">
-                            Buat Workspace
-                        </button>
+                @role('Employee')
+                    <div class="card border border-dashed text-center p-5">
+                        <div class="card-body">
+                            <h5 class="mb-1">Anda belum memiliki workspace</h5>
+                            <p class="text-muted mb-3">Sepertinya Anda belum ditugaskan ke workspace manapun. Mintalah akses kepada manajer atau administrator untuk bergabung dalam project.</p>
+                            <a href="{{ route('dashboard') }}" class="btn btn-outline-primary btn-sm">Kembali ke Dashboard</a>
+                        </div>
                     </div>
-                </div>
+                @else
+                    <div class="card border border-dashed text-center p-5">
+                        <div class="card-body">
+                            <h5 class="mb-1">Belum ada workspace</h5>
+                            <p class="text-muted mb-3">Mulai dengan membuat workspace pertama Anda.</p>
+                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#workspace-create-modal">
+                                Buat Workspace
+                            </button>
+                        </div>
+                    </div>
+                @endrole
             </div>
         @endforelse
     </div>
 
+    @unlessrole('Employee')
     @include('workspace.partials._workspace-modal', workspace_modal_context(
         modalId: 'workspace-create-modal',
         title: 'Create Workspace',
@@ -142,20 +159,25 @@
         method: 'POST',
         workspace: null,
         employees: $employees,
+        managers: $managers,
         statuses: $statuses
     ))
+    @endunlessrole
 
-    @foreach ($workspaces as $workspace)
-        @include('workspace.partials._workspace-modal', workspace_modal_context(
-            modalId: 'workspace-edit-modal-' . $workspace->workspace_id,
-            title: 'Edit Workspace',
-            action: route('workspaces.update', $workspace),
-            method: 'PUT',
-            workspace: $workspace,
-            employees: $employees,
-            statuses: $statuses
-        ))
-    @endforeach
+    @unlessrole('Employee')
+        @foreach ($workspaces as $workspace)
+            @include('workspace.partials._workspace-modal', workspace_modal_context(
+                modalId: 'workspace-edit-modal-' . $workspace->workspace_id,
+                title: 'Edit Workspace',
+                action: route('workspaces.update', $workspace),
+                method: 'PUT',
+                workspace: $workspace,
+                employees: $employees,
+                managers: $managers,
+                statuses: $statuses
+            ))
+        @endforeach
+    @endunlessrole
 @endsection
 
 @push('scripts')
@@ -181,10 +203,45 @@
                         return;
                     }
 
+                        const formatEmployee = (state) => {
+                        if (!state.id) return state.text;
+                        const $el = $(state.element);
+                        const level = $el.data('level') || '';
+                        const role = $el.data('role') || '';
+                        const specialization = $el.data('specialization') || '';
+
+                        const levelClass = $el.data('levelClass') || 'bg-label-secondary';
+                        const roleClass = $el.data('roleClass') || 'bg-label-primary';
+                        const levelBadge = level ? `<span class="badge ${levelClass} me-1" style="font-size:75%">${level}</span>` : '';
+                        const roleBadge = role ? `<span class="badge ${roleClass}" style="font-size:75%">${role}</span>` : '';
+
+                        const specHtml = specialization ? `<div class="text-muted" style="font-size:80%">${specialization}</div>` : '';
+
+                        return `<div class="d-flex justify-content-between align-items-start">
+                                    <div class="me-2" style="max-width:65%">
+                                        <div class="text-truncate">${state.text}</div>
+                                        ${specHtml}
+                                    </div>
+                                    <div class="text-end align-self-start">${levelBadge}${roleBadge}</div>
+                                </div>`;
+                    };
+
+                    const formatSelection = (state) => {
+                        if (!state.id) return state.text;
+                        const $el = $(state.element);
+                        const level = $el.data('level') || '';
+                        const role = $el.data('role') || '';
+                        const small = level || role ? ` <small class="text-muted">${level ? level : ''}${level && role ? ' • ' : ''}${role ? role : ''}</small>` : '';
+                        return `${state.text}${small}`;
+                    };
+
                     $(select).select2({
                         dropdownParent: $(modal),
                         width: '100%',
-                        placeholder: select.dataset.placeholder ?? 'Select option'
+                        placeholder: select.dataset.placeholder ?? 'Select option',
+                        escapeMarkup: (m) => m,
+                        templateResult: formatEmployee,
+                        templateSelection: formatSelection,
                     });
                 });
             };

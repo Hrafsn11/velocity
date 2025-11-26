@@ -30,7 +30,8 @@ Route::middleware(['auth', 'verified', 'check.account.status'])->group(function 
 
     Route::get('/sprint-board', [SprintController::class, 'board'])->name('sprint-board');
 
-    Route::get('/workspace/velocity', [ProjectDetailController::class, 'show'])->name('workspace.detail');
+    // Workspace detail (dynamic) — show workspace by id (workspace_id)
+    Route::get('/workspaces/{workspace}', [ProjectDetailController::class, 'show'])->name('workspaces.show');
 
     // Profile Management
     Route::prefix('profile')->name('profile.')->controller(AdminProfileController::class)->group(function () {

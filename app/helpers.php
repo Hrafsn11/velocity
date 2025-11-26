@@ -105,7 +105,8 @@ if (!function_exists('workspace_modal_context')) {
         string $method,
         $workspace,
         $employees,
-        $statuses
+        $statuses,
+        $managers = null
     ): array {
         $managerValue = old('manager_id', optional($workspace)->manager_id);
         $memberValues = old('members', $workspace?->members?->pluck('employee_id')->all() ?? []);
@@ -118,6 +119,7 @@ if (!function_exists('workspace_modal_context')) {
             'method',
             'workspace',
             'employees',
+            'managers',
             'statuses',
             'managerValue',
             'memberValues',
