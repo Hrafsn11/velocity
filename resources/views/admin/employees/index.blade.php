@@ -122,9 +122,12 @@
                         <div class="d-flex justify-content-start align-items-center">
                             <div class="avatar-wrapper">
                                 <div class="avatar avatar-sm me-3">
-                                    @if($employee['avatar'])
-                                    <img src="{{ asset('storage/' . $employee['avatar']) }}" alt="Avatar" class="rounded-circle object-fit-cover">
-                                    @else
+                                        @php
+                                            $avatarSrc = $employee['avatar_url'] ?? ($employee['avatar'] ? asset('storage/' . $employee['avatar']) : null);
+                                        @endphp
+                                        @if($avatarSrc)
+                                        <img src="{{ $avatarSrc }}" alt="Avatar" class="rounded-circle object-fit-cover">
+                                        @else
                                     <span class="avatar-initial rounded-circle bg-label-primary">
                                         {{ collect(explode(' ', $employee['name']))->map(fn($word) => strtoupper(substr($word, 0, 1)))->take(2)->join('') }}
                                     </span>

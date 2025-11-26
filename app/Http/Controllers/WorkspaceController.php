@@ -16,17 +16,52 @@ class WorkspaceController extends Controller
     public function __construct(
         private readonly WorkspaceService $workspaceService
     ) {
+        $this->authorizeResource(Workspace::class, 'workspace');
     }
 
     public function index(): View
     {
-        $workspaces = $this->workspaceService->list();
+        // If the authenticated user is an Employee, only show workspaces they are a member of.
+        $user = auth()->user();
+        if ($user && $user->hasRole('Employee')) {
+            $profile = EmployeeProfile::where('user_id', $user->user_id)->first();
+            if ($profile) {
+                $workspaces = Workspace::query()
+                    ->with(['manager.user', 'members.user'])
+                    ->whereHas('members', function ($q) use ($profile) {
+                        $q->where('employee_profiles.employee_id', $profile->employee_id);
+                    })->get();
+            } else {
+                $workspaces = collect();
+            }
+        } else {
+            $workspaces = $this->workspaceService->list();
+        }
+        // Sort employees by role, level priority (lead highest), then user name
         $employees = EmployeeProfile::query()
             ->with('user')
             ->whereHas('user')
             ->leftJoin('users', 'users.user_id', '=', 'employee_profiles.user_id')
-            ->orderBy('users.name')
             ->select('employee_profiles.*')
+            ->orderBy('employee_profiles.role')
+            ->orderByRaw("CASE
+                WHEN employee_profiles.level = 'lead' THEN 5
+                WHEN employee_profiles.level = 'senior' THEN 4
+                WHEN employee_profiles.level = 'middle' THEN 3
+                WHEN employee_profiles.level = 'junior' THEN 2
+                WHEN employee_profiles.level = 'intern' THEN 1
+                ELSE 0 END DESC")
+            ->orderBy('users.name')
+            ->get();
+
+        $managers = EmployeeProfile::query()
+            ->with('user')
+            ->whereHas('user')
+            ->where('employee_profiles.level', 'lead')
+            ->leftJoin('users', 'users.user_id', '=', 'employee_profiles.user_id')
+            ->select('employee_profiles.*')
+            ->orderBy('employee_profiles.role')
+            ->orderBy('users.name')
             ->get();
 
         $statuses = WorkspaceStatus::cases();
@@ -34,6 +69,7 @@ class WorkspaceController extends Controller
         return view('workspace.index', [
             'workspaces' => $workspaces,
             'employees' => $employees,
+            'managers' => $managers,
             'statuses' => $statuses,
         ]);
     }

@@ -8,10 +8,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasRoles, HasUlids;
 
     /**
@@ -51,11 +51,6 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -68,13 +63,8 @@ class User extends Authenticatable
         ];
     }
 
-    /**
-     * Get the employee profile associated with the user.
-     */
     public function employeeProfile()
     {
-        // Explicitly set foreign key and local key to `user_id` because
-        // the users table uses ULID primary key named `user_id` instead of `id`.
         return $this->hasOne(EmployeeProfile::class, 'user_id', 'user_id');
     }
 
@@ -162,5 +152,28 @@ class User extends Authenticatable
     public function getUserTypeBadgeAttribute(): string
     {
         return $this->isEmployee() ? '🧑‍💻' : '👤';
+    }
+
+    public function getAvatarUrlAttribute(): ?string
+    {
+        $avatar = $this->avatar;
+        if (empty($avatar)) {
+            return null;
+        }
+
+        try {
+            if (Storage::disk('public')->exists($avatar)) {
+                return asset('storage/' . ltrim($avatar, '/'));
+            }
+        } catch (\Throwable $e) {
+            // ignore
+        }
+
+        $assetPath = public_path('assets/img/avatars/' . $avatar);
+        if (file_exists($assetPath)) {
+            return asset('assets/img/avatars/' . $avatar);
+        }
+
+        return null;
     }
 }

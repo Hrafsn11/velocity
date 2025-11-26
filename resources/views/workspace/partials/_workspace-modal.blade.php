@@ -57,8 +57,13 @@
                             <select class="form-select workspace-select @error('manager_id') is-invalid @enderror"
                                 id="workspace-manager-{{ $modalId }}" name="manager_id" data-placeholder="Pilih manager" required>
                                 <option value="" disabled {{ $managerValue ? '' : 'selected' }}>Pilih manager</option>
-                                @foreach ($employees as $employee)
+                                @foreach (($managers ?? $employees) as $employee)
                                     <option value="{{ $employee->employee_id }}"
+                                        data-level="{{ $employee->level ?? '' }}"
+                                        data-role="{{ $employee->role ?? '' }}"
+                                        data-specialization="{{ $employee->specialization ?? '' }}"
+                                        data-level-class="{{ $employee->level_badge ?? ($employee->level ? 'bg-label-secondary' : '') }}"
+                                        data-role-class="{{ $employee->role_badge ?? ($employee->role ? 'bg-label-secondary' : '') }}"
                                         {{ $managerValue === $employee->employee_id ? 'selected' : '' }}>
                                         {{ $employee->user->name ?? 'Employee' }}
                                     </option>
@@ -90,6 +95,11 @@
                             id="workspace-members-{{ $modalId }}" name="members[]" data-placeholder="Tambah anggota">
                             @foreach ($employees as $employee)
                                 <option value="{{ $employee->employee_id }}"
+                                    data-level="{{ $employee->level ?? '' }}"
+                                    data-role="{{ $employee->role ?? '' }}"
+                                    data-specialization="{{ $employee->specialization ?? '' }}"
+                                    data-level-class="{{ $employee->level_badge ?? ($employee->level ? 'bg-label-secondary' : '') }}"
+                                    data-role-class="{{ $employee->role_badge ?? ($employee->role ? 'bg-label-secondary' : '') }}"
                                     {{ in_array($employee->employee_id, $memberValues, true) ? 'selected' : '' }}>
                                     {{ $employee->user->name ?? 'Employee' }}
                                 </option>

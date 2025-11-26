@@ -57,7 +57,7 @@ class SprintController extends Controller
                         'title' => 'Fix: Cart items not updating quantity',
                         'badge' => 'Bug',
                         'badge_color' => 'danger',
-                        'image' => 'assets/img/elements/2.jpg', // Contoh task dengan gambar
+                        'image' => 'assets/img/elements/2.jpg', 
                         'assignees' => ['2.png'],
                         'attachments' => 1,
                         'comments' => 12
@@ -98,6 +98,6 @@ class SprintController extends Controller
             ]
         ];
 
-        return view('workspace.index', compact('boards', 'sprintInfo'));
+        return view('sprint.board', compact('boards', 'sprintInfo'));
     }
 }

@@ -74,6 +74,36 @@ class EmployeeProfile extends Model
     }
 
     /**
+     * Get the level badge background class for UI badges.
+     */
+    public function getLevelBadgeAttribute(): string
+    {
+        return match ($this->level) {
+            'intern' => 'bg-label-info',
+            'junior' => 'bg-label-success',
+            'middle' => 'bg-label-primary',
+            'senior' => 'bg-label-warning',
+            'lead' => 'bg-label-danger',
+            default => 'bg-label-secondary',
+        };
+    }
+
+    /**
+     * Get the role badge background class for UI badges.
+     */
+    public function getRoleBadgeAttribute(): string
+    {
+        return match ($this->role) {
+            'programmer' => 'bg-label-success',
+            'designer' => 'bg-label-primary',
+            'qa' => 'bg-label-warning',
+            'analyst' => 'bg-label-info',
+            'manager' => 'bg-label-danger',
+            default => 'bg-label-secondary',
+        };
+    }
+
+    /**
      * Get the status badge class.
      */
     public function getStatusBadgeAttribute(): string

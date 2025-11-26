@@ -69,9 +69,8 @@
             <li class="nav-item navbar-dropdown dropdown-user dropdown ms-2"> <a
                     class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
                     <div class="avatar avatar-online">
-                        @if(auth()->user()->avatar && file_exists(storage_path('app/public/' . auth()->user()->avatar)))
-                        <img src="{{ asset('storage/' . auth()->user()->avatar) . '?t=' . time() }}"
-                            alt class="h-auto rounded-circle object-fit-cover" />
+                        @if($url = auth()->user()->avatar_url)
+                        <img src="{{ $url . '?t=' . time() }}" alt class="h-auto rounded-circle object-fit-cover" />
                         @else
                         <span class="avatar-initial rounded-circle bg-label-primary">
                             {{ collect(explode(' ', auth()->user()->name))->map(fn($word) => strtoupper(substr($word, 0, 1)))->take(2)->join('') }}
@@ -85,9 +84,8 @@
                             <div class="d-flex align-items-center">
                                 <div class="flex-shrink-0 me-3">
                                     <div class="avatar avatar-online">
-                                        @if(auth()->user()->avatar && file_exists(storage_path('app/public/' . auth()->user()->avatar)))
-                                        <img src="{{ asset('storage/' . auth()->user()->avatar) . '?t=' . time() }}"
-                                            alt class="h-auto rounded-circle object-fit-cover" />
+                                        @if($url = auth()->user()->avatar_url)
+                                        <img src="{{ $url . '?t=' . time() }}" alt class="h-auto rounded-circle object-fit-cover" />
                                         @else
                                         <span class="avatar-initial rounded-circle bg-label-primary">
                                             {{ collect(explode(' ', auth()->user()->name))->map(fn($word) => strtoupper(substr($word, 0, 1)))->take(2)->join('') }}

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $project['name'])
+@section('title', optional($summary['workspace'])->title ?? 'Workspace')
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('assets/css/workspace-project.css') }}">
@@ -14,21 +14,29 @@
                 class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-4">
 
                 <div class="d-flex align-items-center gap-3">
-                    <div class="avatar avatar-lg rounded bg-label-primary">
-                        <span class="avatar-initial rounded">
-                            <i class="ti ti-bolt ti-md"></i>
-                        </span>
+                    @php
+                        $workspaceImage = workspace_image_url(optional($summary['workspace'])->image_path);
+                        $workspaceInitials = workspace_initials(optional($summary['workspace'])->title ?? 'WP');
+                    @endphp
+                    <div class="avatar avatar-lg rounded">
+                        @if($workspaceImage)
+                            <img src="{{ $workspaceImage }}" alt="{{ optional($summary['workspace'])->title }}" class="rounded" style="width:56px;height:56px;object-fit:cover;" />
+                        @else
+                            <span class="avatar-initial rounded-circle bg-label-primary" style="width:56px;height:56px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;">{{ $workspaceInitials }}</span>
+                        @endif
                     </div>
                     <div>
                         <div class="d-flex align-items-center gap-2">
-                            <h4 class="fw-bold text-heading mb-0">{{ $project['name'] }}</h4>
-                            <span class="badge bg-label-success">Active</span>
+                            <h4 class="fw-bold text-heading mb-0">{{ optional($summary['workspace'])->title ?? 'Workspace' }}</h4>
+                            @if(optional($summary['workspace'])->status)
+                                <span class="badge {{ optional($summary['workspace'])->status->badgeClass() ?? 'bg-label-secondary' }}">{{ optional($summary['workspace'])->status->label() ?? optional($summary['workspace'])->status }}</span>
+                            @endif
                         </div>
-                        <div class="d-flex align-items-center text-muted mt-1 small">
+                        {{-- <div class="d-flex align-items-center text-muted mt-1 small">
                             <span>Project Management</span>
                             <span class="mx-2">•</span>
                             <span class="fw-medium text-body">Phase 2</span>
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
 
@@ -38,10 +46,23 @@
                         <span class="text-muted small me-2 fw-bold text-uppercase">Team:</span>
 
                         <div class="avatar-group d-flex align-items-center">
-                            @foreach ($project['members'] as $img)
-                                <div class="avatar avatar-sm pull-up" data-bs-toggle="tooltip" title="Member Name">
-                                    <img src="{{ asset('assets/img/avatars/' . $img) }}" alt="Avatar"
-                                        class="rounded-circle">
+                            @foreach ($summary['members'] as $member)
+                                @php
+                                    $initials = collect(explode(' ', $member['name'] ?? ''))->map(fn($w) => strtoupper(substr($w,0,1)))->filter()->take(2)->join('');
+                                    $initials = $initials ?: 'NA';
+                                    // pick background class: prefer level_badge or role_badge, otherwise deterministic
+                                    $bg = $member['level_badge'] ?? $member['role_badge'] ?? null;
+                                    if (!$bg) {
+                                        $colors = ['bg-label-primary','bg-label-success','bg-label-info','bg-label-warning','bg-label-danger','bg-label-secondary'];
+                                        $bg = $colors[crc32($member['name'] ?? 'na') % count($colors)];
+                                    }
+                                @endphp
+                                <div class="avatar avatar-sm pull-up" data-bs-toggle="tooltip" title="{{ $member['name'] }} • {{ $member['role'] }} • {{ $member['level'] }}">
+                                    @if(!empty($member['avatar_url']))
+                                        <img src="{{ $member['avatar_url'] }}" alt="{{ $member['name'] }}" class="rounded-circle">
+                                    @else
+                                        <span class="avatar-initial rounded-circle {{ $bg }} text-white" style="font-weight:700;">{{ $initials }}</span>
+                                    @endif
                                 </div>
                             @endforeach
                             @role('Super Admin')
@@ -141,11 +162,10 @@
                                         <div class="bg-white dark:bg-dark p-3 rounded border h-100">
                                             <div class="d-flex justify-content-between mb-2">
                                                 <small class="text-muted text-uppercase fw-bold">Completion</small>
-                                                <small class="fw-bold text-primary">{{ $project['progress'] }}%</small>
+                                                <small class="fw-bold text-primary">{{ $summary['progress'] }}%</small>
                                             </div>
                                             <div class="progress" style="height: 6px;">
-                                                <div class="progress-bar bg-primary"
-                                                    style="width: {{ $project['progress'] }}%"></div>
+                                                <div class="progress-bar bg-primary" style="width: {{ $summary['progress'] }}%"></div>
                                             </div>
                                             <p class="small text-muted mt-2 mb-0">Progress is steady based on sprint
                                                 velocity.</p>
@@ -171,15 +191,7 @@
                             </div>
                             <div class="card-body">
                                 <div id="project-description">
-                                    <p><strong>Velocity App - Phase 2</strong> aims to overhaul the existing payment
-                                        infrastructure.</p>
-                                    <p>Key objectives include:</p>
-                                    <ul>
-                                        <li>Integrating Midtrans Snap API.</li>
-                                        <li>Refactoring the checkout flow for better UX.</li>
-                                        <li>Implementing automated invoice generation via PDF.</li>
-                                    </ul>
-                                    <p>The team will follow the standard Scrum methodology with 2-week sprints.</p>
+                                    {!! optional($summary['workspace'])->description ?? '<em>No description</em>' !!}
                                 </div>
                             </div>
                         </div>
@@ -205,7 +217,7 @@
 
                                 <div class="d-flex justify-content-between align-items-center mb-1">
                                     <span class="text-muted small">Timeline</span>
-                                    <span class="fw-bold small">{{ $project['due_date'] }}</span>
+                                    <span class="fw-bold small">{{ $summary['end_date'] ?? 'TBD' }}</span>
                                 </div>
                                 <div class="progress mb-3" style="height: 6px;">
                                     <div class="progress-bar bg-success" style="width: 65%"></div>
@@ -219,19 +231,15 @@
                             </div>
                             <div class="card-body pb-0">
                                 <ul class="timeline ms-2">
-                                    @foreach ($project['activities'] as $activity)
+                                    @foreach ($summary['recent_activities'] as $activity)
                                         <li class="timeline-item timeline-item-transparent border-transparent pb-4">
                                             <span class="timeline-point timeline-point-secondary"></span>
                                             <div class="timeline-event">
                                                 <div class="timeline-header mb-1">
-                                                    <h6 class="mb-0 text-sm">{{ $activity['user'] }}</h6>
-                                                    <small class="text-muted">{{ $activity['time'] }}</small>
+                                                    <h6 class="mb-0 text-sm">{{ $activity['user'] ?? 'System' }}</h6>
+                                                    <small class="text-muted">{{ $activity['time'] ?? '' }}</small>
                                                 </div>
-                                                <p class="mb-0 text-sm">
-                                                    {{ $activity['action'] }}
-                                                    <a href="javascript:void(0)"
-                                                        class="fw-bold text-primary">{{ $activity['target'] }}</a>
-                                                </p>
+                                                <p class="mb-0 text-sm">{{ $activity['action'] ?? '' }}</p>
                                             </div>
                                         </li>
                                     @endforeach
