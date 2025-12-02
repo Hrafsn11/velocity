@@ -62,21 +62,22 @@
                                 data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <i class="ti ti-dots-vertical text-muted"></i>
                             </button>
-                            <div class="dropdown-menu dropdown-menu-end"
-                                aria-labelledby="workspace-menu-{{ $workspace->workspace_id }}">
-                                <a class="dropdown-item" href="{{ route('workspaces.show', $workspace) }}">Open</a>
+                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="workspace-menu-{{ $workspace->workspace_id }}">
                                 @unlessrole('Employee')
-                                <div class="dropdown-divider"></div>
+                                
                                 <button class="dropdown-item" data-bs-toggle="modal"
                                     data-bs-target="#workspace-edit-modal-{{ $workspace->workspace_id }}">
                                     Edit Workspace
                                 </button>
-                                
+                                <div class="dropdown-divider"></div>
                                 <form action="{{ route('workspaces.destroy', $workspace) }}" method="POST"
                                     onsubmit="return confirm('Arsipkan workspace ini?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="dropdown-item text-danger">Archive</button>
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="ti ti-archive me-1"></i>
+                                        Archive
+                                    </button>
                                 </form>
                                 @endunlessrole
                             </div>
@@ -118,8 +119,9 @@
                                 </ul>
                             </div>
                             <div class="text-end">
-                                <small class="text-muted d-block">End</small>
-                                <small class="fw-bold">{{ optional($workspace->end_date)->format('d M Y') ?? 'TBD' }}</small>
+                                {{-- <small class="text-muted d-block">End</small>
+                                <small class="fw-bold">{{ optional($workspace->end_date)->format('d M Y') ?? 'TBD' }}</small> --}}
+                                <a class="btn btn-primary btn-sm" href="{{ route('workspaces.show', $workspace) }}">Open Project</a>
                             </div>
                         </div>
                     </div>

@@ -1,4 +1,4 @@
-<div class="offcanvas offcanvas-end event-sidebar" tabindex="-1" id="addEventSidebar" aria-labelledby="addEventSidebarLabel">>
+<div class="offcanvas offcanvas-end event-sidebar" tabindex="-1" id="addEventSidebar" aria-labelledby="addEventSidebarLabel">d
     <div class="offcanvas-header border-bottom">
         <h5 class="offcanvas-title" id="addEventSidebarLabel">Add Event</h5>
         <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>

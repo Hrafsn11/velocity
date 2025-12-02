@@ -20,11 +20,16 @@
   const kanbanOffcanvas = new bootstrap.Offcanvas(kanbanSidebar);
 
   // Get kanban data
-  const kanbanResponse = await fetch(assetsPath + 'json/kanban.json');
-  if (!kanbanResponse.ok) {
-    console.error('error', kanbanResponse);
+  // Check if custom data fetch function exists (from app-kanban-custom.js)
+  if (typeof window.kanbanDataFetch === 'function') {
+    boards = await window.kanbanDataFetch();
+  } else {
+    const kanbanResponse = await fetch(assetsPath + 'json/kanban.json');
+    if (!kanbanResponse.ok) {
+      console.error('error', kanbanResponse);
+    }
+    boards = await kanbanResponse.json();
   }
-  boards = await kanbanResponse.json();
 
   // datepicker init
   if (datePicker) {
@@ -152,15 +157,19 @@
 
   // Render footer
   function renderFooter(attachments, comments, assigned, members) {
+    // Ensure attachments and comments show 0 instead of null
+    const attachmentsCount = attachments || 0;
+    const commentsCount = comments || 0;
+    
     return (
       "<div class='d-flex justify-content-between align-items-center flex-wrap mt-2'>" +
       "<div class='d-flex'> <span class='d-flex align-items-center me-2'><i class='ti ti-paperclip me-1'></i>" +
       "<span class='attachments'>" +
-      attachments +
+      attachmentsCount +
       '</span>' +
       "</span> <span class='d-flex align-items-center ms-2'><i class='ti ti-message-2 me-1'></i>" +
       '<span> ' +
-      comments +
+      commentsCount +
       ' </span>' +
       '</span></div>' +
       "<div class='avatar-group d-flex align-items-center assigned-avatar'>" +
@@ -187,6 +196,17 @@
     },
     click: function (el) {
       let element = el;
+      
+      // Check if custom openDrawer exists (from app-kanban-custom.js)
+      if (typeof window.openDrawer === 'function') {
+        const taskId = element.getAttribute('data-eid');
+        if (taskId) {
+          window.openDrawer('edit', null, taskId);
+          return;
+        }
+      }
+      
+      // Fallback to default behavior
       let title = element.getAttribute('data-eid')
           ? element.querySelector('.kanban-text').textContent
           : element.textContent,
@@ -223,6 +243,14 @@
     },
 
     buttonClick: function (el, boardId) {
+      // Check if custom openDrawer function exists (from app-kanban-custom.js)
+      if (typeof window.openDrawer === 'function') {
+        // Use custom drawer for creating new task
+        window.openDrawer('create', boardId);
+        return;
+      }
+
+      // Fallback to default jKanban add form
       const addNew = document.createElement('form');
       addNew.setAttribute('class', 'new-item-form');
       addNew.innerHTML =
@@ -409,9 +437,22 @@
   if (kanbanAddNewBoard) {
     kanbanAddNewBoard.addEventListener('submit', function (e) {
       e.preventDefault();
-      const thisEle = this,
+      const thisEle = e.target,
         value = thisEle.querySelector('.form-control').value,
         id = value.replace(/\s+/g, '-').toLowerCase();
+      
+      // Check if custom add board function exists
+      if (typeof window.addBoard === 'function') {
+        window.addBoard(value);
+        // Hide input fields
+        if (kanbanAddNewInput) {
+          kanbanAddNewInput.forEach(el => {
+            el.classList.add('d-none');
+          });
+        }
+        return;
+      }
+      
       kanban.addBoards([
         {
           id: id,

@@ -1,20 +1,21 @@
 <div class="offcanvas offcanvas-end kanban-update-item-sidebar" tabindex="-1" id="kanban-update-item-sidebar">
     <div class="offcanvas-header border-bottom">
-        <h5 class="offcanvas-title">Edit Task</h5>
+        <h5 class="offcanvas-title">Task Details</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body pt-0">
+        <input type="hidden" id="current-task-id" value="">
         <div class="nav-align-top">
-            <ul class="nav nav-tabs mb-5 rounded-0">
+            <ul class="nav nav-tabs mb-4 rounded-0">
                 <li class="nav-item">
                     <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-update">
-                        <i class="ti ti-edit ti-18px me-1_5"></i>
-                        <span class="align-middle">Edit</span>
+                        <i class="ti ti-file ti-xs me-1"></i>
+                        <span class="align-middle">Detail</span>
                     </button>
                 </li>
                 <li class="nav-item">
                     <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-activity">
-                        <i class="ti ti-chart-pie-2 ti-18px me-1_5"></i>
+                        <i class="ti ti-timeline ti-xs me-1"></i>
                         <span class="align-middle">Activity</span>
                     </button>
                 </li>
@@ -23,36 +24,74 @@
         <div class="tab-content p-0">
             <div class="tab-pane fade show active" id="tab-update" role="tabpanel">
                 <form>
-                    <div class="mb-5">
-                        <label class="form-label" for="title">Title</label>
-                        <input type="text" id="title" class="form-control" placeholder="Enter Title" />
+                    <div class="mb-4">
+                        <label class="form-label fw-medium" for="title">Task Title</label>
+                        <input type="text" id="title" class="form-control" placeholder="Enter task title" />
                     </div>
-                    <div class="mb-5">
-                        <label class="form-label" for="due-date">Due Date</label>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-medium" for="description">Description</label>
+                        <textarea id="description" class="form-control" rows="3" placeholder="Add task description..."></textarea>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium" for="priority">Priority</label>
+                            <select class="select2 form-select" id="priority">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium" for="label">Label</label>
+                            <select class="select2 form-select" id="label">
+                                <option value="">-- Select Label --</option>
+                                <option value="ux">UX</option>
+                                <option value="images">Images</option>
+                                <option value="info">Info</option>
+                                <option value="code_review">Code Review</option>
+                                <option value="app">App</option>
+                                <option value="charts_maps">Charts & Maps</option>
+                                <option value="feature">Feature</option>
+                                <option value="bug">Bug</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-medium" for="due-date">Due Date</label>
                         <input type="text" id="due-date" class="form-control flatpickr-date"
-                            placeholder="YYYY-MM-DD" />
+                            placeholder="Select due date" />
                     </div>
-                    <div class="mb-5">
-                        <label class="form-label" for="label">Label</label>
-                        <select class="select2 select2-label form-select" id="label">
-                            <option data-color="bg-label-success" value="UX">UX</option>
-                            <option data-color="bg-label-warning" value="Images">Images</option>
-                            <option data-color="bg-label-info" value="Info">Info</option>
-                            <option data-color="bg-label-danger" value="Code Review">Code Review</option>
-                            <option data-color="bg-label-secondary" value="App">App</option>
-                            <option data-color="bg-label-primary" value="Charts & Maps">Charts & Maps</option>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-medium d-block">Assigned To</label>
+                        <select class="select2 form-select" id="assignees" multiple="multiple">
+                            @if(isset($workspace))
+                                @foreach($workspace->members as $member)
+                                    <option value="{{ $member->employee_id }}">
+                                        {{ $member->user->name }}
+                                    </option>
+                                @endforeach
+                            @endif
                         </select>
                     </div>
-                    <div class="mb-5">
-                        <label class="form-label">Assigned</label>
-                        <div class="assigned d-flex flex-wrap"></div>
-                    </div>
-                    <div class="mb-5">
-                        <label class="form-label" for="attachments">Attachments</label>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-medium d-block">Attachments <span id="attachments-count" class="badge bg-label-secondary ms-1">0</span></label>
+                        <div id="attachments-list" class="mb-3">
+                            <small class="text-muted">No attachments</small>
+                        </div>
                         <input type="file" class="form-control" id="attachments" />
                     </div>
-                    <div class="mb-5">
-                        <label class="form-label">Comment</label>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-medium d-block">Comments <span id="comments-count" class="badge bg-label-secondary ms-1">0</span></label>
+                        <div id="comments-list" class="mb-3" style="max-height: 300px; overflow-y: auto;">
+                            <small class="text-muted">No comments yet</small>
+                        </div>
                         <div class="comment-editor border-bottom-0"></div>
                         <div class="d-flex justify-content-end">
                             <div class="comment-toolbar">
@@ -66,21 +105,23 @@
                             </div>
                         </div>
                     </div>
-                    <div class="d-flex flex-wrap gap-2">
-                        <button type="button" class="btn btn-primary" data-bs-dismiss="offcanvas">Update</button>
-                        <button type="button" class="btn btn-label-danger" data-bs-dismiss="offcanvas">Delete</button>
+
+                    <div class="d-flex flex-wrap gap-2 pt-3 border-top">
+                        <button type="button" class="btn btn-primary">
+                            <i class="ti ti-device-floppy me-1"></i> Update Task
+                        </button>
+                        <button type="button" class="btn btn-label-danger">
+                            <i class="ti ti-trash me-1"></i> Delete Task
+                        </button>
                     </div>
                 </form>
             </div>
             <div class="tab-pane fade text-heading" id="tab-activity" role="tabpanel">
-                <div class="media mb-4 d-flex align-items-center">
-                    <div class="avatar me-3 flex-shrink-0">
-                        <span class="avatar-initial bg-label-success rounded-circle">HJ</span>
-                    </div>
-                    <div class="media-body">
-                        <p class="mb-0"><span>Jordan</span> Left the board.</p>
-                        <small class="text-muted">Today 11:00 AM</small>
-                    </div>
+                <div id="activity-timeline">
+                    <p class="text-muted text-center py-4">
+                        <i class="ti ti-timeline-event ti-lg d-block mb-2"></i>
+                        No activity yet
+                    </p>
                 </div>
             </div>
         </div>

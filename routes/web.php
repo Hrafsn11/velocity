@@ -1,16 +1,18 @@
 <?php
 
-use App\Http\Controllers\ProjectDetailController;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\TimelineController;
-use App\Http\Controllers\Admin\RoleController;
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\SprintController;
-use App\Http\Controllers\WorkspaceController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
-use App\Http\Controllers\Admin\EmployeeController;
+use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\KanbanBoardController;
+use App\Http\Controllers\KanbanTaskController;
+use App\Http\Controllers\ProjectDetailController;
+use App\Http\Controllers\SprintController;
+use App\Http\Controllers\TimelineController;
+use App\Http\Controllers\WorkspaceController;
+use Illuminate\Support\Facades\Route;
 
 // Redirect root ke login
 Route::get('/', function () {
@@ -75,7 +77,29 @@ Route::middleware(['auth', 'verified', 'check.account.status'])->group(function 
         Route::delete('/{employee}', [EmployeeController::class, 'destroy'])->middleware('permission:delete employees')->name('destroy');
     });
 
-    // Risk Management Routes (for testing - hardcoded data)
+    // Kanban Board Management
+    Route::prefix('workspaces/{workspace}/kanban')->name('kanban.')->group(function () {
+        // Boards
+        Route::get('/boards', [KanbanBoardController::class, 'index'])->name('boards.index');
+        Route::post('/boards', [KanbanBoardController::class, 'store'])->name('boards.store');
+        Route::put('/boards/{board}', [KanbanBoardController::class, 'update'])->name('boards.update');
+        Route::delete('/boards/{board}', [KanbanBoardController::class, 'destroy'])->name('boards.destroy');
+        Route::post('/boards/reorder', [KanbanBoardController::class, 'reorder'])->name('boards.reorder');
+
+        // Tasks
+        Route::get('/tasks/{task}', [KanbanTaskController::class, 'show'])->name('tasks.show');
+        Route::post('/tasks', [KanbanTaskController::class, 'store'])->name('tasks.store');
+        Route::put('/tasks/{task}', [KanbanTaskController::class, 'update'])->name('tasks.update');
+        Route::post('/tasks/{task}/move', [KanbanTaskController::class, 'move'])->name('tasks.move');
+        Route::delete('/tasks/{task}', [KanbanTaskController::class, 'destroy'])->name('tasks.destroy');
+        Route::post('/tasks/{task}/comment', [KanbanTaskController::class, 'comment'])->name('tasks.comment');
+        Route::post('/tasks/{task}/attach', [KanbanTaskController::class, 'attach'])->name('tasks.attach');
+        Route::delete('/attachments/{attachment}', [KanbanTaskController::class, 'deleteAttachment'])->name('attachments.destroy');
+        Route::get('/tasks/{task}/activities', [KanbanTaskController::class, 'activities'])->name('tasks.activities');
+    });
+
+
+        // Risk Management Routes (for testing - hardcoded data)
     Route::prefix('risk')->name('risk.')->group(function () {
         Route::get('/dashboard', function () {
             return view('risk.dashboard');
@@ -93,6 +117,7 @@ Route::middleware(['auth', 'verified', 'check.account.status'])->group(function 
             return view('risk.change-requests');
         })->name('change-requests');
     });
+    
 });
 
 // Breeze auth routes
