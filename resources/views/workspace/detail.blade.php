@@ -91,48 +91,47 @@
                 </div>
             </div>
         </div>
-
         <div class="card-footer p-0 border-top">
-            <ul class="nav nav-tabs nav-fill w-100" role="tablist">
+            <ul class="nav nav-tabs nav-fill border-bottom-0 m-0" role="tablist">
                 <li class="nav-item">
                     <button type="button" class="nav-link active py-3" role="tab" data-bs-toggle="tab"
-                        data-bs-target="#tab-overview">
+                        data-bs-target="#tab-overview" aria-controls="tab-overview" aria-selected="true">
                         <i class="ti ti-info-circle me-1"></i> Overview
                     </button>
                 </li>
                 <li class="nav-item">
                     <button type="button" class="nav-link py-3" role="tab" data-bs-toggle="tab"
-                        data-bs-target="#tab-list">
+                        data-bs-target="#tab-list" aria-controls="tab-list" aria-selected="false">
                         <i class="ti ti-list-check me-1"></i> List
                     </button>
                 </li>
                 <li class="nav-item">
                     <button type="button" class="nav-link py-3" role="tab" data-bs-toggle="tab"
-                        data-bs-target="#tab-board">
+                        data-bs-target="#tab-board" aria-controls="tab-board" aria-selected="false">
                         <i class="ti ti-layout-kanban me-1"></i> Board
                     </button>
                 </li>
                 <li class="nav-item">
                     <button type="button" class="nav-link py-3" role="tab" data-bs-toggle="tab"
-                        data-bs-target="#tab-timeline">
+                        data-bs-target="#tab-timeline" aria-controls="tab-timeline" aria-selected="false">
                         <i class="ti ti-timeline me-1"></i> Timeline
                     </button>
                 </li>
                 <li class="nav-item">
                     <button type="button" class="nav-link py-3" role="tab" data-bs-toggle="tab"
-                        data-bs-target="#tab-dashboard">
+                        data-bs-target="#tab-dashboard" aria-controls="tab-dashboard" aria-selected="false">
                         <i class="ti ti-chart-pie me-1"></i> Dashboard
                     </button>
                 </li>
                 <li class="nav-item">
                     <button type="button" class="nav-link py-3" role="tab" data-bs-toggle="tab"
-                        data-bs-target="#tab-calendar">
+                        data-bs-target="#tab-calendar" aria-controls="tab-calendar" aria-selected="false">
                         <i class="ti ti-calendar me-1"></i> Calendar
                     </button>
                 </li>
                 <li class="nav-item">
                     <button type="button" class="nav-link py-3" role="tab" data-bs-toggle="tab"
-                        data-bs-target="#tab-files">
+                        data-bs-target="#tab-files" aria-controls="tab-files" aria-selected="false">
                         <i class="ti ti-folder me-1"></i> Files
                     </button>
                 </li>
@@ -140,10 +139,9 @@
         </div>
     </div>
 
-    <div class="nav-align-top mb-4">
-        <div class="tab-content p-0 bg-transparent shadow-none">
-            <div class="tab-pane fade show active" id="tab-overview" role="tabpanel">
-                <div class="row g-4">
+    <div class="tab-content mb-4">
+        <div class="tab-pane fade show active" id="tab-overview" role="tabpanel">
+            <div class="row g-4">
 
                     <div class="col-xl-8 col-lg-7">
 
@@ -261,29 +259,56 @@
             </div>
 
             <div class="tab-pane fade" id="tab-list" role="tabpanel">
-                <h1>ini adalah tab list</h1>
+                <div class="card">
+                    <div class="card-body">
+                        <h4>Task List</h4>
+                        <p class="text-muted">Task list view will be implemented here.</p>
+                    </div>
+                </div>
             </div>
 
             <div class="tab-pane fade" id="tab-board" role="tabpanel">
-                @include('workspace.partials._board-tab')
+                <div class="h-100">
+                    <div class="card-body p-0">
+                        @include('workspace.partials._board-tab')
+                    </div>
+                </div>
             </div>
 
             <div class="tab-pane fade" id="tab-timeline" role="tabpanel">
-                <h1>ini adalah tab timeline</h1>
+                <div class="card">
+                    <div class="card-body">
+                        <h4>Project Timeline</h4>
+                        <p class="text-muted">Timeline view will be implemented here.</p>
+                    </div>
+                </div>
             </div>
 
             <div class="tab-pane fade" id="tab-dashboard" role="tabpanel">
-                <h1>ini adalah tab dashboard</h1>
+                <div class="card">
+                    <div class="card-body">
+                        <h4>Dashboard</h4>
+                        <p class="text-muted">Analytics dashboard will be implemented here.</p>
+                    </div>
+                </div>
             </div>
 
             <div class="tab-pane fade" id="tab-calendar" role="tabpanel">
-                @include('workspace.partials._calendar-tab')
+                <div class="card h-100">
+                    <div class="card-body p-0">
+                        @include('workspace.partials._calendar-tab')
+                    </div>
+                </div>
             </div>
 
             <div class="tab-pane fade" id="tab-files" role="tabpanel">
-                <h1>ini adalah tab files</h1>
+                <div class="card">
+                    <div class="card-body">
+                        <h4>Files & Documents</h4>
+                        <p class="text-muted">File management will be implemented here.</p>
+                    </div>
+                </div>
             </div>
-
         </div>
     </div>
 

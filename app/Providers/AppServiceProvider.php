@@ -24,6 +24,9 @@ class AppServiceProvider extends ServiceProvider
             \Illuminate\Support\Facades\URL::forceScheme('https');
         }
 
+        // Register Observers
+        \App\Models\KanbanTask::observe(\App\Observers\KanbanTaskObserver::class);
+
         // Update config values dynamically from helper
         try {
             Config::set('app.name', app_config('app_name'));

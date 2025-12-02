@@ -51,7 +51,15 @@
                 <span class="menu-header-text">PMO & Workspaces</span>
             </li>
 
-            <li @class(['menu-item', 'active' => request()->routeIs('workspaces.*')])>
+            <li @class(['menu-item', 'active' => request()->routeIs('workspaces')])>
+                <a href="{{ route('workspaces.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons ti ti-layout"></i>
+                    <div data-i18n="Workspaces">Workspaces</div>
+                </a>
+            </li>
+
+
+            {{-- <li @class(['menu-item', 'active' => request()->routeIs('workspaces.*')])>
                 <a href="javascript:void(0);" class="menu-link menu-toggle">
                     <i class="menu-icon tf-icons ti ti-briefcase"></i>
                     <div data-i18n="Workspaces">Workspaces</div>
@@ -65,13 +73,8 @@
                             <div data-i18n="All Workspaces">All Workspaces</div>
                         </a>
                     </li>
-                    <li class="menu-item">
-                        <a href="#" class="menu-link">
-                            <div data-i18n="Create New">Create New</div>
-                        </a>
-                    </li>
                 </ul>
-            </li>
+            </li> --}}
 
             <li @class(['menu-item', 'active' => request()->routeIs('timeline.*')])>
                 <a href="{{ route('timeline.index') }}" class="menu-link">
@@ -88,7 +91,7 @@
             <li @class(['menu-item', 'active' => request()->routeIs('employees.*')])>
                 <a href="{{ route('employees.index') }}" class="menu-link">
                     <i class="menu-icon tf-icons ti ti-users-group"></i>
-                    <div data-i18n="Employees">Manage Employees</div>
+                    <div data-i18n="Employees">Employees</div>
                 </a>
             </li>
         @endcan

@@ -7,8 +7,7 @@
    CSS Custom Properties (Variables)
    ======================================== */
 :root {
-    --workspace-tab-height-offset: 350px;
-    --workspace-board-min-height: 500px;
+    --workspace-board-min-height: 600px;
     --workspace-calendar-min-height: 600px;
     --workspace-sidebar-width: 260px;
     --workspace-avatar-overlap: -0.8rem;
@@ -74,18 +73,15 @@
 /* ========================================
    Kanban Board Tab Layout
    ======================================== */
-#tab-board {
-    height: calc(100vh - var(--workspace-tab-height-offset));
+#tab-board .card {
     min-height: var(--workspace-board-min-height);
-    overflow: hidden;
 }
 
-.app-kanban {
-    flex: 1;
+#tab-board .app-kanban {
     display: flex;
     flex-direction: column;
     height: 100%;
-    overflow: hidden;
+    min-height: var(--workspace-board-min-height);
 }
 
 .kanban-wrapper {
@@ -127,40 +123,28 @@
 /* ========================================
    Calendar Tab Layout
    ======================================== */
-#tab-calendar {
-    height: calc(100vh - var(--workspace-tab-height-offset));
+#tab-calendar .card {
     min-height: var(--workspace-calendar-min-height);
-    overflow: hidden;
 }
 
 .app-calendar-wrapper {
-    border: 0 !important;
-    box-shadow: none !important;
-    margin: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    overflow: hidden;
-}
-
-#tab-calendar.show .app-calendar-wrapper {
-    display: flex !important;
-    flex-direction: row !important;
+    display: flex;
+    flex-direction: row;
     height: 100%;
+    min-height: var(--workspace-calendar-min-height);
+    overflow: hidden;
 }
 
 /* ========================================
    Calendar Sidebar
    ======================================== */
 .app-calendar-sidebar {
-    position: relative !important;
-    transform: none !important;
-    left: auto !important;
-    width: var(--workspace-sidebar-width) !important;
+    position: relative;
+    width: var(--workspace-sidebar-width);
     flex-shrink: 0;
     height: 100%;
     overflow-y: auto;
     border-right: 1px solid #dbdade;
-    z-index: 2;
     background: #fff;
     transition: all var(--workspace-transition-speed) ease;
 }
@@ -178,6 +162,7 @@
 
 #calendar {
     min-height: 100%;
+    padding: 1rem;
 }
 
 /* Fix FullCalendar rendering issues */

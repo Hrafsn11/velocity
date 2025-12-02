@@ -1,7 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
+@import "tailwindcss";
 
 /* 1. Search Bar Styling */
 .search-modern-wrapper {
@@ -12,12 +9,6 @@
 /* Saat dark mode */
 [data-theme="dark"] .search-modern-wrapper {
     background-color: #2f3349;
-}
-
-.search-modern-wrapper:focus-within {
-    background-color: #fff;
-    border-color: {{ app_config('primary_color') }}; /* Border warna tema saat aktif */
-    box-shadow: 0 0 0 4px rgba(var(--bs-primary-rgb), 0.1); /* Glow halus */
 }
 
 .search-modern-input {
@@ -41,11 +32,6 @@
     margin: 0 2px;
 }
 
-.nav-icon-btn:hover {
-    background-color: rgba(0, 0, 0, 0.05); /* Efek background saat hover */
-    color: {{ app_config('primary_color') }};
-    transform: translateY(-1px);
-}
 [data-theme="dark"] .nav-icon-btn:hover {
     background-color: rgba(255, 255, 255, 0.1);
 }

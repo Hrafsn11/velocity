@@ -11,6 +11,8 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
 use App\Http\Controllers\Admin\EmployeeController;
+use App\Http\Controllers\KanbanBoardController;
+use App\Http\Controllers\KanbanTaskController;
 
 // Redirect root ke login
 Route::get('/', function () {
@@ -73,6 +75,27 @@ Route::middleware(['auth', 'verified', 'check.account.status'])->group(function 
         Route::get('/{employee}/edit', [EmployeeController::class, 'edit'])->middleware('permission:edit employees')->name('edit');
         Route::put('/{employee}', [EmployeeController::class, 'update'])->middleware('permission:edit employees')->name('update');
         Route::delete('/{employee}', [EmployeeController::class, 'destroy'])->middleware('permission:delete employees')->name('destroy');
+    });
+
+    // Kanban Board Management
+    Route::prefix('workspaces/{workspace}/kanban')->name('kanban.')->group(function () {
+        // Boards
+        Route::get('/boards', [KanbanBoardController::class, 'index'])->name('boards.index');
+        Route::post('/boards', [KanbanBoardController::class, 'store'])->name('boards.store');
+        Route::put('/boards/{board}', [KanbanBoardController::class, 'update'])->name('boards.update');
+        Route::delete('/boards/{board}', [KanbanBoardController::class, 'destroy'])->name('boards.destroy');
+        Route::post('/boards/reorder', [KanbanBoardController::class, 'reorder'])->name('boards.reorder');
+
+        // Tasks
+        Route::get('/tasks/{task}', [KanbanTaskController::class, 'show'])->name('tasks.show');
+        Route::post('/tasks', [KanbanTaskController::class, 'store'])->name('tasks.store');
+        Route::put('/tasks/{task}', [KanbanTaskController::class, 'update'])->name('tasks.update');
+        Route::post('/tasks/{task}/move', [KanbanTaskController::class, 'move'])->name('tasks.move');
+        Route::delete('/tasks/{task}', [KanbanTaskController::class, 'destroy'])->name('tasks.destroy');
+        Route::post('/tasks/{task}/comment', [KanbanTaskController::class, 'comment'])->name('tasks.comment');
+        Route::post('/tasks/{task}/attach', [KanbanTaskController::class, 'attach'])->name('tasks.attach');
+        Route::delete('/attachments/{attachment}', [KanbanTaskController::class, 'deleteAttachment'])->name('attachments.destroy');
+        Route::get('/tasks/{task}/activities', [KanbanTaskController::class, 'activities'])->name('tasks.activities');
     });
 });
 
