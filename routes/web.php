@@ -74,6 +74,25 @@ Route::middleware(['auth', 'verified', 'check.account.status'])->group(function 
         Route::put('/{employee}', [EmployeeController::class, 'update'])->middleware('permission:edit employees')->name('update');
         Route::delete('/{employee}', [EmployeeController::class, 'destroy'])->middleware('permission:delete employees')->name('destroy');
     });
+
+    // Risk Management Routes (for testing - hardcoded data)
+    Route::prefix('risk')->name('risk.')->group(function () {
+        Route::get('/dashboard', function () {
+            return view('risk.dashboard');
+        })->name('dashboard');
+        
+        Route::get('/', function () {
+            return view('risk.index');
+        })->name('index');
+        
+        Route::get('/issues', function () {
+            return view('risk.issues');
+        })->name('issues');
+        
+        Route::get('/change-requests', function () {
+            return view('risk.change-requests');
+        })->name('change-requests');
+    });
 });
 
 // Breeze auth routes
