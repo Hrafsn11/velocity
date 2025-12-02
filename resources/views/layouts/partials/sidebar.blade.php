@@ -82,6 +82,44 @@
                     <div data-i18n="Global Timeline">Global Timeline</div>
                 </a>
             </li>
+
+            <li @class([
+                'menu-item',
+                'active open' => request()->routeIs('risk.*'),
+            ])>
+                <a href="javascript:void(0);" class="menu-link menu-toggle">
+                    <i class="menu-icon tf-icons ti ti-alert-triangle"></i>
+                    <div data-i18n="Risk Management">Risk Management</div>
+                </a>
+                <ul class="menu-sub">
+                    <li @class([
+                        'menu-item',
+                        'active' => request()->routeIs('risk.dashboard'),
+                    ])>
+                        <a href="{{ route('risk.dashboard') }}" class="menu-link">
+                            <div data-i18n="Dashboard">Dashboard</div>
+                        </a>
+                    </li>
+                    <li @class(['menu-item', 'active' => request()->routeIs('risk.index')])>
+                        <a href="{{ route('risk.index') }}" class="menu-link">
+                            <div data-i18n="Risk List">Risk List</div>
+                        </a>
+                    </li>
+                    <li @class(['menu-item', 'active' => request()->routeIs('risk.issues')])>
+                        <a href="{{ route('risk.issues') }}" class="menu-link">
+                            <div data-i18n="Issue Tracker">Issue Tracker</div>
+                        </a>
+                    </li>
+                    <li @class([
+                        'menu-item',
+                        'active' => request()->routeIs('risk.change-requests'),
+                    ])>
+                        <a href="{{ route('risk.change-requests') }}" class="menu-link">
+                            <div data-i18n="Change Requests">Change Requests</div>
+                        </a>
+                    </li>
+                </ul>
+            </li>
         @endrole
 
         @can('view employees')

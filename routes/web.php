@@ -1,18 +1,18 @@
 <?php
 
-use App\Http\Controllers\ProjectDetailController;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\TimelineController;
-use App\Http\Controllers\Admin\RoleController;
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\SprintController;
-use App\Http\Controllers\WorkspaceController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
-use App\Http\Controllers\Admin\EmployeeController;
+use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\KanbanBoardController;
 use App\Http\Controllers\KanbanTaskController;
+use App\Http\Controllers\ProjectDetailController;
+use App\Http\Controllers\SprintController;
+use App\Http\Controllers\TimelineController;
+use App\Http\Controllers\WorkspaceController;
+use Illuminate\Support\Facades\Route;
 
 // Redirect root ke login
 Route::get('/', function () {
@@ -97,6 +97,27 @@ Route::middleware(['auth', 'verified', 'check.account.status'])->group(function 
         Route::delete('/attachments/{attachment}', [KanbanTaskController::class, 'deleteAttachment'])->name('attachments.destroy');
         Route::get('/tasks/{task}/activities', [KanbanTaskController::class, 'activities'])->name('tasks.activities');
     });
+
+
+        // Risk Management Routes (for testing - hardcoded data)
+    Route::prefix('risk')->name('risk.')->group(function () {
+        Route::get('/dashboard', function () {
+            return view('risk.dashboard');
+        })->name('dashboard');
+        
+        Route::get('/', function () {
+            return view('risk.index');
+        })->name('index');
+        
+        Route::get('/issues', function () {
+            return view('risk.issues');
+        })->name('issues');
+        
+        Route::get('/change-requests', function () {
+            return view('risk.change-requests');
+        })->name('change-requests');
+    });
+    
 });
 
 // Breeze auth routes
