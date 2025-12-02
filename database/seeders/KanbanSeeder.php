@@ -23,10 +23,11 @@ class KanbanSeeder extends Seeder
             return;
         }
 
-        $user = User::first();
+        // Get a user with employee profile
+        $user = User::whereHas('employeeProfile')->first();
         
-        if (!$user) {
-            $this->command->error('No user found. Please create a user first.');
+        if (!$user || !$user->user_id) {
+            $this->command->error('No valid user found. Please create users first.');
             return;
         }
 
@@ -50,11 +51,11 @@ class KanbanSeeder extends Seeder
                 KanbanTask::create([
                     'board_id' => $board->board_id,
                     'workspace_id' => $workspace->workspace_id,
-                    'created_by' => $user->id,
+                    'created_by' => $user->user_id,
                     'title' => $boardData['title'] . ' Task ' . $i,
                     'description' => 'This is a sample task for testing purposes',
                     'priority' => ['low', 'medium', 'high', 'urgent'][rand(0, 3)],
-                    'label' => ['ux', 'images', 'info', 'code_review', 'app', 'feature', 'bug'][rand(0, 6)],
+                    'label' => ['UX', 'Images', 'Info', 'Code Review', 'App', 'Feature', 'Bug'][rand(0, 6)],
                     'due_date' => now()->addDays(rand(1, 30)),
                     'position' => $i - 1,
                 ]);
