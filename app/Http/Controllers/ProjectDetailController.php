@@ -17,6 +17,12 @@ class ProjectDetailController extends Controller
         // Use WorkspaceService to build summary payload. Keep defensive: if workspace not found, abort 404.
         $summary = $this->workspaceService->summary($id);
 
-        return view('workspace.detail', ['summary' => $summary]);
+        // Get workspace with members for kanban drawer
+        $workspace = \App\Models\Workspace::with(['members.user'])->findOrFail($id);
+
+        return view('workspace.detail', [
+            'summary' => $summary,
+            'workspace' => $workspace
+        ]);
     }
 }

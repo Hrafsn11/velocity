@@ -1,0 +1,43 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('kanban_task_activities', function (Blueprint $table) {
+            $table->ulid('activity_id')->primary();
+            $table->foreignUlid('task_id')->constrained('kanban_tasks', 'task_id')->cascadeOnDelete();
+            $table->foreignUlid('user_id')->constrained('users', 'user_id')->cascadeOnDelete();
+            $table->enum('action', [
+                'created',
+                'updated',
+                'moved',
+                'assigned',
+                'unassigned',
+                'commented',
+                'attached',
+                'deleted_attachment',
+                'priority_changed',
+                'label_changed',
+                'due_date_changed',
+                'archived',
+                'restored'
+            ]);
+            $table->text('description');
+            $table->json('old_value')->nullable();
+            $table->json('new_value')->nullable();
+            $table->timestamps();
+
+            $table->index(['task_id', 'created_at']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('kanban_task_activities');
+    }
+};
