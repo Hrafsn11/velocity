@@ -15,12 +15,13 @@ class EmployeeService
      */
     public function getAllEmployees()
     {
-        return User::with('employeeProfile')
+        return User::with(['employeeProfile.workspaces'])
             ->whereHas('employeeProfile')
             ->latest()
             ->get()
             ->map(function ($user) {
                 $profile = $user->employeeProfile;
+                $workspaceCount = $profile->workspaces()->count();
 
                 return [
                     // employee_id comes from the related employee profile (ULID)
@@ -37,7 +38,9 @@ class EmployeeService
                     'role_icon' => $profile?->role_icon,
                     'level_color' => $profile?->level_color,
                     'status_badge' => $profile?->status_badge,
-                    'projects_count' => 0, // Will be implemented when project module is added
+                    'workspaces_count' => $workspaceCount,
+                    'workload_level' => $profile->workload_level,
+                    'workload_badge' => $profile->workload_badge,
                 ];
             });
     }

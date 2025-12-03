@@ -111,7 +111,7 @@
                     <th style="min-width: 200px;">Role & Expertise</th>
                     <th style="min-width: 200px;">Technical Skills</th>
                     <th>Availability</th>
-                    <th style="min-width: 120px;">Projects</th>
+                    <th style="min-width: 150px;">Workload</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -162,12 +162,14 @@
                         <span class="badge {{ $employee['status_badge'] }}">{{ ucfirst($employee['status']) }}</span>
                     </td>
                     <td>
-                        <div class="d-flex flex-column">
-                            <span class="text-muted small">
+                        <div class="d-flex flex-column gap-1">
+                            <span class="badge {{ $employee['workload_badge'] }} d-inline-flex align-items-center" style="width: fit-content;">
                                 <i class="ti ti-briefcase ti-xs me-1"></i>
-                                {{ $employee['projects_count'] }} active
+                                {{ $employee['workload_level'] }}
                             </span>
-                            <small class="text-muted">Feature coming soon</small>
+                            <small class="text-muted">
+                                {{ $employee['workspaces_count'] }} {{ Str::plural('workspace', $employee['workspaces_count']) }}
+                            </small>
                         </div>
                     </td>
                     <td>
