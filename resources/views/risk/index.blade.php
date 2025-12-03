@@ -1,20 +1,20 @@
 @extends('layouts.app')
 
-@section('title', 'Risk Management')
+@section('title', 'Risk List')
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('libs/datatables-bs5/datatables.bootstrap5.css') }}">
-    <link rel="stylesheet" href="{{ asset('libs/datatables-responsive-bs5/responsive.bootstrap5.css') }}">
-    <link rel="stylesheet" href="{{ asset('libs/select2/select2.css') }}">
 @endpush
 
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
     
-    <!-- Header -->
+    {{-- Header --}}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="fw-bold mb-1">Risk Management</h4>
+            <h4 class="fw-bold mb-1">
+                <i class="ti ti-alert-triangle text-primary me-2"></i>Risk Management
+            </h4>
             <p class="text-muted mb-0">Identifikasi dan kelola risiko proyek</p>
         </div>
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRiskModal">
@@ -22,17 +22,17 @@
         </button>
     </div>
 
-    <!-- Stats Cards -->
+    {{-- Stats Cards --}}
     <div class="row g-4 mb-4">
         <div class="col-xl-3 col-sm-6">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between">
                         <div class="content-left">
-                            <h5 class="mb-1">28</h5>
+                            <h5 class="fw-bold mb-1">28</h5>
                             <small class="text-muted">Total Risks</small>
                         </div>
-                        <span class="badge bg-label-danger rounded-circle p-2">
+                        <span class="badge bg-label-primary rounded-circle p-2">
                             <i class="ti ti-alert-triangle ti-26px"></i>
                         </span>
                     </div>
@@ -44,11 +44,11 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between">
                         <div class="content-left">
-                            <h5 class="mb-1 text-danger">8</h5>
-                            <small class="text-muted">Critical Risks</small>
+                            <h5 class="fw-bold mb-1 text-danger">8</h5>
+                            <small class="text-muted">Critical</small>
                         </div>
                         <span class="badge bg-label-danger rounded-circle p-2">
-                            <i class="ti ti-circle-filled ti-26px"></i>
+                            <i class="ti ti-flame ti-26px"></i>
                         </span>
                     </div>
                 </div>
@@ -59,11 +59,11 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between">
                         <div class="content-left">
-                            <h5 class="mb-1 text-warning">12</h5>
-                            <small class="text-muted">High Risks</small>
+                            <h5 class="fw-bold mb-1 text-warning">12</h5>
+                            <small class="text-muted">High</small>
                         </div>
                         <span class="badge bg-label-warning rounded-circle p-2">
-                            <i class="ti ti-circle-filled ti-26px"></i>
+                            <i class="ti ti-alert-circle ti-26px"></i>
                         </span>
                     </div>
                 </div>
@@ -74,11 +74,11 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between">
                         <div class="content-left">
-                            <h5 class="mb-1 text-info">8</h5>
-                            <small class="text-muted">Medium/Low Risks</small>
+                            <h5 class="fw-bold mb-1 text-info">8</h5>
+                            <small class="text-muted">Medium/Low</small>
                         </div>
                         <span class="badge bg-label-info rounded-circle p-2">
-                            <i class="ti ti-circle-filled ti-26px"></i>
+                            <i class="ti ti-info-circle ti-26px"></i>
                         </span>
                     </div>
                 </div>
@@ -86,239 +86,118 @@
         </div>
     </div>
 
-    <!-- Risk List Table -->
+    {{-- Risk Table --}}
     <div class="card">
         <div class="card-header border-bottom">
-            <h5 class="card-title mb-0">Risk List</h5>
+            <h5 class="card-title mb-0">All Risks</h5>
         </div>
         <div class="card-datatable table-responsive">
-            <table class="datatables-risks table border-top" id="risksTable">
+            <table class="datatables-risks table" id="risksTable">
                 <thead>
                     <tr>
                         <th>ID</th>
                         <th>Risk Description</th>
                         <th>Category</th>
-                        <th>Probability</th>
-                        <th>Impact</th>
-                        <th>Risk Score</th>
-                        <th>Urgency Level</th>
-                        <th>Affected Module</th>
+                        <th>Score</th>
+                        <th>Urgency</th>
+                        <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Risk 1 -->
+                    {{-- Risk 1 --}}
                     <tr>
-                        <td><span class="fw-medium">#R001</span></td>
+                        <td><span class="fw-semibold">#R001</span></td>
                         <td>
-                            <div class="d-flex flex-column">
+                            <div>
                                 <span class="fw-medium">Database server overload pada peak hours</span>
-                                <small class="text-muted">Cause: Kurang optimasi query dan indexing</small>
+                                <br><small class="text-muted">Cause: Kurang optimasi query dan indexing</small>
                             </div>
                         </td>
                         <td><span class="badge bg-label-primary">Technical</span></td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <span class="me-2">4</span>
-                                <div class="progress w-px-50" style="height: 6px;">
-                                    <div class="progress-bar bg-warning" style="width: 80%"></div>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <span class="me-2">5</span>
-                                <div class="progress w-px-50" style="height: 6px;">
-                                    <div class="progress-bar bg-danger" style="width: 100%"></div>
-                                </div>
-                            </div>
-                        </td>
                         <td><span class="badge bg-danger rounded-pill">20</span></td>
                         <td><span class="badge bg-danger">Critical</span></td>
-                        <td><span class="text-nowrap">Module Performance</span></td>
+                        <td><span class="badge bg-label-success">Active</span></td>
                         <td>
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-sm btn-icon btn-text-secondary rounded-pill" data-bs-toggle="tooltip" title="View Details">
-                                    <i class="ti ti-eye"></i>
+                            <div class="dropdown">
+                                <button type="button" class="btn btn-sm btn-icon btn-text-secondary rounded-pill dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                    <i class="ti ti-dots-vertical"></i>
                                 </button>
-                                <button class="btn btn-sm btn-icon btn-text-secondary rounded-pill" data-bs-toggle="tooltip" title="Edit">
-                                    <i class="ti ti-edit"></i>
-                                </button>
-                                <button class="btn btn-sm btn-icon btn-text-secondary rounded-pill" data-bs-toggle="tooltip" title="Delete">
-                                    <i class="ti ti-trash"></i>
-                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item view-risk-btn" href="#" 
+                                           data-risk-id="R001"
+                                           data-risk-desc="Database server overload pada peak hours"
+                                           data-risk-cause="Kurang optimasi query dan indexing"
+                                           data-risk-mitigation="Implement query optimization, add database indexing, and setup load balancing. Monitor server performance with alerts for CPU/memory usage above 70%."
+                                           data-bs-toggle="modal" 
+                                           data-bs-target="#viewRiskModal">
+                                            <i class="ti ti-eye me-2"></i>View Details & Mitigation
+                                        </a>
+                                    </li>
+                                    <li><a class="dropdown-item" href="#"><i class="ti ti-edit me-2"></i>Edit Risk</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item text-primary convert-to-issue-btn" href="#" 
+                                           data-risk-id="R001" 
+                                           data-risk-desc="Database server overload pada peak hours"
+                                           data-bs-toggle="modal" 
+                                           data-bs-target="#convertToIssueModal">
+                                            <i class="ti ti-arrow-right-circle me-2"></i>Convert to Issue
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="#"><i class="ti ti-check me-2"></i>Mark as Mitigated</a></li>
+                                    <li><a class="dropdown-item text-danger" href="#"><i class="ti ti-x me-2"></i>Close Risk</a></li>
+                                </ul>
                             </div>
                         </td>
                     </tr>
-                    <!-- Risk 2 -->
+                    {{-- Add more hardcoded risks --}}
                     <tr>
-                        <td><span class="fw-medium">#R002</span></td>
+                        <td><span class="fw-semibold">#R002</span></td>
                         <td>
-                            <div class="d-flex flex-column">
+                            <div>
                                 <span class="fw-medium">Key developer resign mendadak</span>
-                                <small class="text-muted">Cause: Work-life balance issues</small>
+                                <br><small class="text-muted">Cause: Work-life balance issues</small>
                             </div>
                         </td>
                         <td><span class="badge bg-label-warning">SDM</span></td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <span class="me-2">3</span>
-                                <div class="progress w-px-50" style="height: 6px;">
-                                    <div class="progress-bar bg-info" style="width: 60%"></div>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <span class="me-2">4</span>
-                                <div class="progress w-px-50" style="height: 6px;">
-                                    <div class="progress-bar bg-warning" style="width: 80%"></div>
-                                </div>
-                            </div>
-                        </td>
                         <td><span class="badge bg-warning rounded-pill">12</span></td>
                         <td><span class="badge bg-warning">High</span></td>
-                        <td><span class="text-nowrap">All Development Tasks</span></td>
+                        <td><span class="badge bg-label-info">Monitoring</span></td>
                         <td>
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-sm btn-icon btn-text-secondary rounded-pill" data-bs-toggle="tooltip" title="View Details">
-                                    <i class="ti ti-eye"></i>
+                            <div class="dropdown">
+                                <button type="button" class="btn btn-sm btn-icon btn-text-secondary rounded-pill dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                    <i class="ti ti-dots-vertical"></i>
                                 </button>
-                                <button class="btn btn-sm btn-icon btn-text-secondary rounded-pill" data-bs-toggle="tooltip" title="Edit">
-                                    <i class="ti ti-edit"></i>
-                                </button>
-                                <button class="btn btn-sm btn-icon btn-text-secondary rounded-pill" data-bs-toggle="tooltip" title="Delete">
-                                    <i class="ti ti-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <!-- Risk 3 -->
-                    <tr>
-                        <td><span class="fw-medium">#R003</span></td>
-                        <td>
-                            <div class="d-flex flex-column">
-                                <span class="fw-medium">Budget overrun karena scope creep</span>
-                                <small class="text-muted">Cause: Permintaan fitur tambahan tanpa approval formal</small>
-                            </div>
-                        </td>
-                        <td><span class="badge bg-label-success">Financial</span></td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <span class="me-2">4</span>
-                                <div class="progress w-px-50" style="height: 6px;">
-                                    <div class="progress-bar bg-warning" style="width: 80%"></div>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <span class="me-2">3</span>
-                                <div class="progress w-px-50" style="height: 6px;">
-                                    <div class="progress-bar bg-info" style="width: 60%"></div>
-                                </div>
-                            </div>
-                        </td>
-                        <td><span class="badge bg-warning rounded-pill">12</span></td>
-                        <td><span class="badge bg-warning">High</span></td>
-                        <td><span class="text-nowrap">Budget Planning</span></td>
-                        <td>
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-sm btn-icon btn-text-secondary rounded-pill" data-bs-toggle="tooltip" title="View Details">
-                                    <i class="ti ti-eye"></i>
-                                </button>
-                                <button class="btn btn-sm btn-icon btn-text-secondary rounded-pill" data-bs-toggle="tooltip" title="Edit">
-                                    <i class="ti ti-edit"></i>
-                                </button>
-                                <button class="btn btn-sm btn-icon btn-text-secondary rounded-pill" data-bs-toggle="tooltip" title="Delete">
-                                    <i class="ti ti-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <!-- Risk 4 -->
-                    <tr>
-                        <td><span class="fw-medium">#R004</span></td>
-                        <td>
-                            <div class="d-flex flex-column">
-                                <span class="fw-medium">Delay integrasi third-party API</span>
-                                <small class="text-muted">Cause: Dokumentasi API tidak lengkap dari vendor</small>
-                            </div>
-                        </td>
-                        <td><span class="badge bg-label-info">Timeline</span></td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <span class="me-2">3</span>
-                                <div class="progress w-px-50" style="height: 6px;">
-                                    <div class="progress-bar bg-info" style="width: 60%"></div>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <span class="me-2">3</span>
-                                <div class="progress w-px-50" style="height: 6px;">
-                                    <div class="progress-bar bg-info" style="width: 60%"></div>
-                                </div>
-                            </div>
-                        </td>
-                        <td><span class="badge bg-info rounded-pill">9</span></td>
-                        <td><span class="badge bg-info">Medium</span></td>
-                        <td><span class="text-nowrap">Integration Module</span></td>
-                        <td>
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-sm btn-icon btn-text-secondary rounded-pill" data-bs-toggle="tooltip" title="View Details">
-                                    <i class="ti ti-eye"></i>
-                                </button>
-                                <button class="btn btn-sm btn-icon btn-text-secondary rounded-pill" data-bs-toggle="tooltip" title="Edit">
-                                    <i class="ti ti-edit"></i>
-                                </button>
-                                <button class="btn btn-sm btn-icon btn-text-secondary rounded-pill" data-bs-toggle="tooltip" title="Delete">
-                                    <i class="ti ti-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <!-- Risk 5 -->
-                    <tr>
-                        <td><span class="fw-medium">#R005</span></td>
-                        <td>
-                            <div class="d-flex flex-column">
-                                <span class="fw-medium">Security vulnerability pada authentication module</span>
-                                <small class="text-muted">Cause: Belum implementasi 2FA dan rate limiting</small>
-                            </div>
-                        </td>
-                        <td><span class="badge bg-label-primary">Technical</span></td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <span class="me-2">2</span>
-                                <div class="progress w-px-50" style="height: 6px;">
-                                    <div class="progress-bar bg-success" style="width: 40%"></div>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <span class="me-2">5</span>
-                                <div class="progress w-px-50" style="height: 6px;">
-                                    <div class="progress-bar bg-danger" style="width: 100%"></div>
-                                </div>
-                            </div>
-                        </td>
-                        <td><span class="badge bg-warning rounded-pill">10</span></td>
-                        <td><span class="badge bg-warning">High</span></td>
-                        <td><span class="text-nowrap">Authentication Module</span></td>
-                        <td>
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-sm btn-icon btn-text-secondary rounded-pill" data-bs-toggle="tooltip" title="View Details">
-                                    <i class="ti ti-eye"></i>
-                                </button>
-                                <button class="btn btn-sm btn-icon btn-text-secondary rounded-pill" data-bs-toggle="tooltip" title="Edit">
-                                    <i class="ti ti-edit"></i>
-                                </button>
-                                <button class="btn btn-sm btn-icon btn-text-secondary rounded-pill" data-bs-toggle="tooltip" title="Delete">
-                                    <i class="ti ti-trash"></i>
-                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item view-risk-btn" href="#" 
+                                           data-risk-id="R002"
+                                           data-risk-desc="Key developer resign mendadak"
+                                           data-risk-cause="Work-life balance issues"
+                                           data-risk-mitigation="Prepare backup resources and cross-training plan. Create comprehensive knowledge transfer documentation. Improve team work-life balance and retention programs."
+                                           data-bs-toggle="modal" 
+                                           data-bs-target="#viewRiskModal">
+                                            <i class="ti ti-eye me-2"></i>View Details & Mitigation
+                                        </a>
+                                    </li>
+                                    <li><a class="dropdown-item" href="#"><i class="ti ti-edit me-2"></i>Edit Risk</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item text-primary convert-to-issue-btn" href="#" 
+                                           data-risk-id="R002" 
+                                           data-risk-desc="Key developer resign mendadak"
+                                           data-bs-toggle="modal" 
+                                           data-bs-target="#convertToIssueModal">
+                                            <i class="ti ti-arrow-right-circle me-2"></i>Convert to Issue
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="#"><i class="ti ti-check me-2"></i>Mark as Mitigated</a></li>
+                                    <li><a class="dropdown-item text-danger" href="#"><i class="ti ti-x me-2"></i>Close Risk</a></li>
+                                </ul>
                             </div>
                         </td>
                     </tr>
@@ -329,64 +208,188 @@
 
 </div>
 
-<!-- Add Risk Modal -->
-<div class="modal fade" id="addRiskModal" tabindex="-1" aria-hidden="true">
+{{-- View Risk Details Modal --}}
+<div class="modal fade" id="viewRiskModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary">
+                <h5 class="modal-title text-white">
+                    <i class="ti ti-alert-triangle me-2"></i>Risk Details & Mitigation
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-4">
+                    {{-- Risk Info --}}
+                    <div class="col-12">
+                        <div class="card bg-label-primary">
+                            <div class="card-body">
+                                <h6 class="mb-2">Risk Information</h6>
+                                <div class="mb-2"><strong>ID:</strong> <span id="view-risk-id">#R001</span></div>
+                                <div class="mb-2"><strong>Description:</strong> <p id="view-risk-desc" class="mb-0 mt-1"></p></div>
+                                <div><strong>Cause:</strong> <p id="view-risk-cause" class="mb-0 mt-1 text-muted"></p></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Mitigation Actions --}}
+                    <div class="col-12">
+                        <h6 class="fw-semibold">
+                            <i class="ti ti-shield-check text-success me-2"></i>Mitigation Actions
+                        </h6>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="alert alert-success">
+                            <p id="view-risk-mitigation" class="mb-0"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">
+                    <i class="ti ti-edit me-1"></i>Edit Risk
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Convert to Issue Modal --}}
+<div class="modal fade" id="convertToIssueModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-primary">
+                <h5 class="modal-title text-white">
+                    <i class="ti ti-arrow-right-circle me-2"></i>Convert Risk to Issue
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="ti ti-info-circle me-2"></i>
+                    <strong>Risk Materialization:</strong> This risk has occurred and will be tracked as an issue.
+                </div>
+                
+                <form id="convertToIssueForm">
+                    <div class="card bg-label-secondary mb-4">
+                        <div class="card-body">
+                            <h6 class="mb-2">Original Risk</h6>
+                            <div class="mb-2"><strong>ID:</strong> <span id="modal-risk-id">#R001</span></div>
+                            <div><strong>Description:</strong> <p id="modal-risk-desc" class="mb-0 mt-1"></p></div>
+                        </div>
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Issue Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="issue-title" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Issue Description <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="issue-description" rows="4" required></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Priority <span class="text-danger">*</span></label>
+                            <select class="form-select" id="issue-priority" required>
+                                <option value="5">5 - Critical (Must fix now)</option>
+                                <option value="4">4 - High (Fix ASAP)</option>
+                                <option value="3" selected>3 - Medium (Fix soon)</option>
+                                <option value="2">2 - Low (Can wait)</option>
+                                <option value="1">1 - Very Low</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Assign PIC <span class="text-danger">*</span></label>
+                            <select class="form-select" id="issue-assignee" required>
+                                <option value="">Select Team Member</option>
+                                <option value="john">John Doe (Senior Developer)</option>
+                                <option value="jane">Jane Smith (UI/UX Designer)</option>
+                                <option value="mike">Mike Johnson (Frontend Dev)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-label-success rounded">
+                        <i class="ti ti-circle-check text-success me-2"></i>
+                        <strong>Issue will be created as #ISS001</strong>
+                        <div class="small mt-1 text-muted">Status: Open | From Risk: <span id="modal-risk-id-footer">#R001</span></div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="convertToIssueForm" class="btn btn-primary">
+                    <i class="ti ti-check me-1"></i>Create Issue
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Add Risk Modal --}}
+<div class="modal fade" id="addRiskModal" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Add New Risk</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form id="addRiskForm">
                     <div class="row g-4">
+                        {{-- Risk Information Section --}}
                         <div class="col-12">
-                            <label class="form-label" for="riskDescription">Risk Description</label>
-                            <textarea class="form-control" id="riskDescription" rows="3" placeholder="Describe the risk..." required></textarea>
+                            <h6 class="fw-semibold">Risk Information</h6>
                         </div>
                         <div class="col-12">
-                            <label class="form-label" for="riskCause">Potential Cause</label>
-                            <textarea class="form-control" id="riskCause" rows="2" placeholder="What could cause this risk?" required></textarea>
+                            <label class="form-label">Risk Description <span class="text-danger">*</span></label>
+                            <textarea class="form-control" rows="3" required></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Cause / Root Issue</label>
+                            <textarea class="form-control" rows="2" placeholder="What causes this risk?"></textarea>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label" for="affectedModule">Affected Module/Feature/Task</label>
-                            <select class="form-select select2" id="affectedModule" required>
-                                <option value="">Select Module</option>
-                                <option value="auth">Authentication Module</option>
-                                <option value="dashboard">Dashboard Module</option>
-                                <option value="reporting">Reporting Module</option>
-                                <option value="integration">Integration Module</option>
-                                <option value="performance">Performance Module</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label" for="riskCategory">Risk Category</label>
-                            <select class="form-select" id="riskCategory" required>
+                            <label class="form-label">Category <span class="text-danger">*</span></label>
+                            <select class="form-select" required>
                                 <option value="">Select Category</option>
-                                <option value="sdm">SDM (Human Resource)</option>
                                 <option value="technical">Technical</option>
+                                <option value="sdm">SDM (Human Resource)</option>
                                 <option value="financial">Financial</option>
                                 <option value="timeline">Timeline</option>
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label" for="probability">Probability (1-5)</label>
-                            <input type="number" class="form-control" id="probability" min="1" max="5" value="3" required>
-                            <small class="text-muted">1=Very Low, 5=Very High</small>
+                            <label class="form-label">Affected Module</label>
+                            <input type="text" class="form-control">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label" for="impact">Impact (1-5)</label>
-                            <input type="number" class="form-control" id="impact" min="1" max="5" value="3" required>
-                            <small class="text-muted">1=Very Low, 5=Very High</small>
+                            <label class="form-label">Probability (1-5)</label>
+                            <input type="number" class="form-control" min="1" max="5" value="3">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Impact (1-5)</label>
+                            <input type="number" class="form-control" min="1" max="5" value="3">
                         </div>
                         <div class="col-12">
-                            <div class="alert alert-info d-flex align-items-center" role="alert">
-                                <i class="ti ti-info-circle me-2"></i>
-                                <div>
-                                    <strong>Risk Score: <span id="calculatedScore">9</span></strong><br>
-                                    <small>Urgency Level: <span id="calculatedUrgency" class="badge bg-info">Medium</span></small>
-                                </div>
+                            <div class="alert alert-info">
+                                <strong>Risk Score: <span id="calc-score">9</span></strong> | 
+                                Urgency: <span class="badge bg-info" id="calc-urgency">Medium</span>
                             </div>
+                        </div>
+
+                        {{-- Mitigation Actions Section --}}
+                        <div class="col-12 mt-4">
+                            <h6 class="fw-semibold">
+                                <i class="ti ti-shield-check text-success me-2"></i>Mitigation Actions
+                            </h6>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">What actions will reduce this risk? <span class="text-danger">*</span></label>
+                            <textarea class="form-control" rows="4" placeholder="Example: Implement query optimization, add database indexing, setup monitoring alerts..." required></textarea>
+                            <small class="text-muted">Describe specific actions to prevent or minimize the risk impact</small>
                         </div>
                     </div>
                 </form>
@@ -402,66 +405,38 @@
 @endsection
 
 @push('scripts')
-    <script src="{{ asset('libs/datatables-bs5/datatables-bootstrap5.js') }}"></script>
-    <script src="{{ asset('libs/select2/select2.js') }}"></script>
-    <script>
-        $(document).ready(function() {
-            // Initialize DataTable
-            $('#risksTable').DataTable({
-                order: [[5, 'desc']], // Sort by Risk Score
-                columnDefs: [
-                    { orderable: false, targets: [8] } // Disable ordering on Actions column
-                ],
-                language: {
-                    search: '',
-                    searchPlaceholder: 'Search risks...'
-                }
-            });
+<script src="{{ asset('libs/datatables-bs5/datatables-bootstrap5.js') }}"></script>
+<script>
+$(document).ready(function() {
+    $('#risksTable').DataTable({order: [[3, 'desc']]});
+    
+    // View Risk Details & Mitigation
+    $('.view-risk-btn').on('click', function() {
+        const riskId = $(this).data('risk-id');
+        const riskDesc = $(this).data('risk-desc');
+        const riskCause = $(this).data('risk-cause');
+        const riskMitigation = $(this).data('risk-mitigation');
+        
+        $('#view-risk-id').text('#' + riskId);
+        $('#view-risk-desc').text(riskDesc);
+        $('#view-risk-cause').text(riskCause);
+        $('#view-risk-mitigation').text(riskMitigation);
+    });
+    
+    // Convert to Issue
+    $('.convert-to-issue-btn').on('click', function() {
+        const riskId = $(this).data('risk-id');
+        const riskDesc = $(this).data('risk-desc');
+        $('#modal-risk-id, #modal-risk-id-footer').text('#' + riskId);
+        $('#modal-risk-desc').text(riskDesc);
+        $('#issue-title').val(riskDesc);
+    });
 
-            // Initialize Select2
-            $('.select2').select2({
-                dropdownParent: $('#addRiskModal')
-            });
-
-            // Calculate Risk Score automatically
-            function calculateRiskScore() {
-                const probability = parseInt($('#probability').val()) || 0;
-                const impact = parseInt($('#impact').val()) || 0;
-                const score = probability * impact;
-                
-                $('#calculatedScore').text(score);
-                
-                // Determine urgency level
-                let urgency = 'Low';
-                let badgeClass = 'bg-success';
-                
-                if (score >= 15) {
-                    urgency = 'Critical';
-                    badgeClass = 'bg-danger';
-                } else if (score >= 10) {
-                    urgency = 'High';
-                    badgeClass = 'bg-warning';
-                } else if (score >= 6) {
-                    urgency = 'Medium';
-                    badgeClass = 'bg-info';
-                }
-                
-                $('#calculatedUrgency').removeClass().addClass('badge ' + badgeClass).text(urgency);
-            }
-
-            $('#probability, #impact').on('input change', calculateRiskScore);
-
-            // Initialize tooltips
-            $('[data-bs-toggle="tooltip"]').tooltip();
-
-            // Form submission
-            $('#addRiskForm').on('submit', function(e) {
-                e.preventDefault();
-                // Handle form submission
-                alert('Risk added successfully!');
-                $('#addRiskModal').modal('hide');
-                this.reset();
-            });
-        });
-    </script>
+    $('#convertToIssueForm').on('submit', function(e) {
+        e.preventDefault();
+        alert('Issue created! Redirecting to issues page...');
+        window.location.href = '{{ route("risk.issues") }}';
+    });
+});
+</script>
 @endpush
