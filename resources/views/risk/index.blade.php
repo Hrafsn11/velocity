@@ -357,74 +357,17 @@
 
 {{-- View Details Modal --}}
 <div class="modal fade" id="viewRiskModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Risk Details</h5>
+                <h5 class="modal-title"><i class="ti ti-alert-triangle me-2"></i>Risk Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">Risk Code</label>
-                        <p id="viewCode" class="mb-0"></p>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">Workspace</label>
-                        <p id="viewWorkspace" class="mb-0"></p>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">Category</label>
-                        <p id="viewCategory" class="mb-0"></p>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">Status</label>
-                        <p id="viewStatus" class="mb-0"></p>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label fw-bold">Description</label>
-                        <p id="viewDescription" class="mb-0"></p>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label fw-bold">Cause/Root Problem</label>
-                        <p id="viewCause" class="mb-0 text-muted"></p>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label fw-bold">Affected Module/Task</label>
-                        <p id="viewAffectedModule" class="mb-0 text-muted"></p>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold">Probability</label>
-                        <p id="viewProbability" class="mb-0"></p>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold">Impact</label>
-                        <p id="viewImpact" class="mb-0"></p>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold">Risk Score</label>
-                        <p id="viewScore" class="mb-0"></p>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label fw-bold">Urgency Level</label>
-                        <p id="viewUrgency" class="mb-0"></p>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label fw-bold">Mitigation Actions</label>
-                        <div id="viewMitigation" class="border rounded p-3 bg-label-success"></div>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">Created By</label>
-                        <p id="viewCreator" class="mb-0"></p>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold">Created At</label>
-                        <p id="viewCreatedAt" class="mb-0"></p>
-                    </div>
-                </div>
+            <div class="modal-body" id="viewRiskContent">
+                <!-- Content will be populated dynamically -->
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -535,29 +478,165 @@ function loadTasksForEdit(workspaceId) {
     select.val(currentValue).trigger('change');
 }
 
-// View Risk Details
+// View Risk Details with Vuexy card-based layout
 function viewRisk(risk) {
-    document.getElementById('viewCode').innerHTML = '<strong class="text-primary">#' + risk.code + '</strong>';
-    document.getElementById('viewWorkspace').innerHTML = '<span class="badge bg-label-primary">' + risk.workspace.title + '</span>';
-    document.getElementById('viewCategory').innerHTML = '<span class="badge bg-label-primary">' + risk.category + '</span>';
-    document.getElementById('viewStatus').innerHTML = '<span class="badge ' + (risk.status === 'active' ? 'bg-label-success' : 'bg-label-secondary') + '">' + risk.status.charAt(0).toUpperCase() + risk.status.slice(1) + '</span>';
-    document.getElementById('viewDescription').textContent = risk.description;
-    document.getElementById('viewCause').textContent = risk.cause || '-';
-    // Show task title instead of ULID
-    document.getElementById('viewAffectedModule').textContent = risk.affected_task ? risk.affected_task.title : 'Not related to specific task';
-    document.getElementById('viewProbability').innerHTML = '<strong>' + risk.probability + '</strong>/5';
-    document.getElementById('viewImpact').innerHTML = '<strong>' + risk.impact + '</strong>/5';
-    document.getElementById('viewScore').innerHTML = '<strong class="text-danger">' + risk.score + '</strong>';
-    document.getElementById('viewUrgency').innerHTML = '<span class="badge bg-' + (risk.urgency === 'Critical' ? 'danger' : risk.urgency === 'High' ? 'warning' : 'info') + '">' + risk.urgency + '</span>';
+    // Build HTML content
+    const urgencyBadge = risk.urgency === 'Critical' ? 'bg-danger' : risk.urgency === 'High' ? 'bg-warning' : 'bg-info';
+    const urgencyIcon = risk.urgency === 'Critical' ? 'ti-alert-triangle' : risk.urgency === 'High' ? 'ti-alert-circle' : 'ti-info-circle';
+    const statusBadge = risk.status === 'mitigated' ? 'bg-success' : risk.status === 'mitigating' ? 'bg-warning' : risk.status === 'analyzing' ? 'bg-info' : 'bg-label-secondary';
     
-    if (risk.mitigation_actions) {
-        document.getElementById('viewMitigation').innerHTML = '<pre class="mb-0" style="white-space: pre-wrap;">' + risk.mitigation_actions + '</pre>';
-    } else {
-        document.getElementById('viewMitigation').innerHTML = '<span class="text-muted">No mitigation actions defined</span>';
-    }
+    let html = `
+        <!-- Overview Card -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h5 class="mb-1">
+                            <span class="badge bg-label-danger">#${risk.code}</span>
+                            <span class="ms-2">${risk.description.substring(0, 60)}${risk.description.length > 60 ? '...' : ''}</span>
+                        </h5>
+                    </div>
+                    <span class="badge ${statusBadge}">
+                        <i class="ti ti-point-filled ti-xs me-1"></i>${risk.status.toUpperCase()}
+                    </span>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <small class="text-muted d-block mb-1">Workspace</small>
+                        <span class="badge bg-label-primary">
+                            <i class="ti ti-briefcase ti-xs me-1"></i>${risk.workspace.title}
+                        </span>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block mb-1">Category</small>
+                        <span class="badge bg-label-secondary">${risk.category}</span>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted d-block mb-1">Risk Score</small>
+                        <div>
+                            <span class="badge ${risk.score >= 20 ? 'bg-danger' : risk.score >= 15 ? 'bg-warning' : 'bg-info'}">
+                                <i class="ti ti-target ti-xs me-1"></i>${risk.score}/25
+                            </span>
+                        </div>
+                        <small class="text-muted">Probability: ${risk.probability}/5 × Impact: ${risk.impact}/5</small>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted d-block mb-1">Urgency Level</small>
+                        <span class="badge ${urgencyBadge}">
+                            <i class="ti ${urgencyIcon} ti-xs me-1"></i>${risk.urgency}
+                        </span>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted d-block mb-1">Created</small>
+                        <small>${new Date(risk.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} by ${risk.creator ? risk.creator.name : 'Unknown'}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Description Card -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h6 class="card-title mb-3">
+                    <i class="ti ti-file-description me-2"></i>Description
+                </h6>
+                <p class="mb-0">${risk.description}</p>
+            </div>
+        </div>
+        
+        ${risk.cause ? `
+            <!-- Root Cause Card -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h6 class="card-title mb-3">
+                        <i class="ti ti-search me-2"></i>Root Cause / Problem
+                    </h6>
+                    <p class="mb-0">${risk.cause}</p>
+                </div>
+            </div>
+        ` : ''}
+        
+        ${risk.affected_task ? `
+            <!-- Affected Task Card -->
+            <div class="card mb-4 border-primary">
+                <div class="card-body">
+                    <h6 class="card-title mb-2">
+                        <i class="ti ti-link me-2 text-primary"></i>Affected Kanban Task
+                    </h6>
+                    <div class="d-flex align-items-center">
+                        <i class="ti ti-clipboard-check ti-md text-primary me-3"></i>
+                        <div>
+                            <strong>${risk.affected_task.title}</strong>
+                            <br><small class="text-muted">Task in ${risk.workspace.title}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        ` : ''}
+        
+        ${risk.mitigation_actions ? `
+            <!-- Mitigation Actions Card -->
+            <div class="card mb-4 border-success">
+                <div class="card-body">
+                    <h6 class="card-title mb-3">
+                        <i class="ti ti-shield-check me-2 text-success"></i>Mitigation Actions
+                    </h6>
+                    <div class="alert alert-success mb-0">
+                        <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit;">${risk.mitigation_actions}</pre>
+                    </div>
+                </div>
+            </div>
+        ` : ''}
+        
+        ${risk.issues && risk.issues.length > 0 ? `
+            <!-- Related Issues Card -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h6 class="card-title mb-3">
+                        <i class="ti ti-bug me-2"></i>Related Issues
+                        <span class="badge bg-label-secondary ms-2">${risk.issues.length}</span>
+                    </h6>
+                    <div class="list-group list-group-flush">
+                        ${risk.issues.map(issue => {
+                            const issueStatusBadge = issue.status === 'resolved' ? 'badge bg-success' : 
+                                                     issue.status === 'in_progress' ? 'badge bg-info' : 
+                                                     issue.status === 'closed' ? 'badge bg-secondary' : 'badge bg-label-warning';
+                            return `
+                                <div class="list-group-item px-0">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <strong class="text-primary">#${issue.code}</strong>
+                                            <span class="ms-2">${issue.title}</span>
+                                            ${issue.assignee ? `<br><small class="text-muted">Assigned to: ${issue.assignee.user.name}</small>` : ''}
+                                        </div>
+                                        <span class="${issueStatusBadge}">
+                                            ${issue.status.replace('_', ' ').toUpperCase()}
+                                        </span>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            </div>
+        ` : `
+            <!-- No Issues Card -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h6 class="card-title mb-3">
+                        <i class="ti ti-bug me-2"></i>Related Issues
+                    </h6>
+                    <div class="text-center py-4">
+                        <i class="ti ti-circle-off ti-xl text-muted mb-3 d-block"></i>
+                        <p class="text-muted mb-0">No issues created from this risk yet</p>
+                        <small class="text-muted">Convert this risk to an issue to start tracking</small>
+                    </div>
+                </div>
+            </div>
+        `}
+    `;
     
-    document.getElementById('viewCreator').textContent = risk.creator ? risk.creator.name : '-';
-    document.getElementById('viewCreatedAt').textContent = new Date(risk.created_at).toLocaleString();
+    document.getElementById('viewRiskContent').innerHTML = html;
     
     var modal = new bootstrap.Modal(document.getElementById('viewRiskModal'));
     modal.show();

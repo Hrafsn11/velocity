@@ -99,7 +99,7 @@ class IssueController extends Controller
     public function show(Issue $issue): JsonResponse
     {
         $issue->load(['workspace', 'risk', 'linkedTask', 'assignee.user', 'creator', 
-                      'comments.user', 'comments.attachments', 'attachments', 'resolver']);
+                      'comments.user', 'comments.attachments', 'attachments', 'resolver', 'changeRequests']);
         
         return response()->json([
             'success' => true,

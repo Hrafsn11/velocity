@@ -477,86 +477,257 @@ async function viewIssueDetail(issueId) {
             document.getElementById('btnResolveFromDetail').style.display = 'none';
         }
         
-        // Build detail content
+        // Build detail content with Vuexy card-based layout
         let html = `
-            <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                    <label class="form-label fw-bold small text-muted">Status</label>
-                    <div><span class="${issue.status_badge}">${issue.status.replace('_', ' ').toUpperCase()}</span></div>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label fw-bold small text-muted">Assigned To</label>
-                    <div>${issue.assignee ? issue.assignee.user.name : '<span class="badge bg-label-secondary">Unassigned</span>'}</div>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label fw-bold small text-muted">Priority</label>
-                    <div><span class="${issue.priority_badge}">Priority: ${issue.priority}/5</span></div>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label fw-bold small text-muted">Severity</label>
-                    <div><span class="badge bg-label-secondary">Severity: ${issue.severity}/5</span></div>
+            <!-- Overview Card -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h6 class="card-title mb-3">
+                        <i class="ti ti-info-circle me-2"></i>Overview
+                    </h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <small class="text-muted d-block mb-1">Workspace</small>
+                            <span class="badge bg-label-primary">
+                                <i class="ti ti-briefcase ti-xs me-1"></i>${issue.workspace.title}
+                            </span>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted d-block mb-1">Status</small>
+                            <span class="${issue.status_badge}">
+                                <i class="ti ti-point-filled ti-xs me-1"></i>${issue.status.replace('_', ' ').toUpperCase()}
+                            </span>
+                        </div>
+                        ${issue.risk ? `
+                            <div class="col-md-6">
+                                <small class="text-muted d-block mb-1">From Risk</small>
+                                <div>
+                                    <span class="badge bg-label-warning">
+                                        <i class="ti ti-alert-triangle ti-xs me-1"></i>#${issue.risk.code}
+                                    </span>
+                                    <small class="ms-2">${issue.risk.description ? issue.risk.description.substring(0, 40) + '...' : ''}</small>
+                                </div>
+                            </div>
+                        ` : `
+                            <div class="col-md-6">
+                                <small class="text-muted d-block mb-1">Source</small>
+                                <span class="badge bg-label-info">
+                                    <i class="ti ti-file-report ti-xs me-1"></i>Direct Report
+                                </span>
+                            </div>
+                        `}
+                        <div class="col-md-6">
+                            <small class="text-muted d-block mb-1">Priority / Severity</small>
+                            <span class="${issue.priority_badge}">
+                                <i class="ti ti-alert-circle ti-xs me-1"></i>Priority ${issue.priority}/5
+                            </span>
+                            <span class="badge bg-label-secondary ms-2">Severity ${issue.severity}/5</span>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted d-block mb-1">Assigned To</small>
+                            <div>
+                                ${issue.assignee ? `
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar avatar-xs me-2">
+                                            <span class="avatar-initial rounded-circle bg-label-primary">
+                                                ${issue.assignee.user.name.charAt(0)}
+                                            </span>
+                                        </div>
+                                        <span>${issue.assignee.user.name}</span>
+                                    </div>
+                                ` : '<span class="badge bg-label-secondary"><i class="ti ti-user-off ti-xs me-1"></i>Unassigned</span>'}
+                            </div>
+                        </div>
+                        ${issue.deadline ? `
+                            <div class="col-md-6">
+                                <small class="text-muted d-block mb-1">Deadline</small>
+                                ${new Date(issue.deadline) < new Date() && !issue.resolved_at ? `
+                                    <span class="badge bg-danger">
+                                        <i class="ti ti-alert-triangle ti-xs me-1"></i>OVERDUE: ${new Date(issue.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                    </span>
+                                ` : `
+                                    <span class="badge bg-label-success">
+                                        <i class="ti ti-calendar ti-xs me-1"></i>${new Date(issue.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                    </span>
+                                `}
+                            </div>
+                        ` : ''}
+                        <div class="col-md-6">
+                            <small class="text-muted d-block mb-1">Reported By</small>
+                            <small>${issue.creator ? issue.creator.name : 'Unknown'}</small>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted d-block mb-1">Reported On</small>
+                            <small>${new Date(issue.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</small>
+                        </div>
+                    </div>
                 </div>
             </div>
             
             ${issue.description ? `
-                <div class="mb-4">
-                    <label class="form-label fw-bold"><i class="ti ti-file-description me-1"></i>Description</label>
-                    <div class="border rounded p-3 bg-light">${issue.description}</div>
+                <!-- Description Card -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h6 class="card-title mb-3">
+                            <i class="ti ti-file-description me-2"></i>Description
+                        </h6>
+                        <p class="mb-0">${issue.description}</p>
+                    </div>
                 </div>
             ` : ''}
             
             ${issue.linked_task ? `
-                <div class="mb-4">
-                    <label class="form-label fw-bold"><i class="ti ti-link me-1 text-info"></i>Related Task</label>
-                    <div class="alert alert-info mb-0">
-                        <strong>${issue.linked_task.title}</strong>
+                <!-- Related Task Card -->
+                <div class="card mb-4 border-info">
+                    <div class="card-body">
+                        <h6 class="card-title mb-2">
+                            <i class="ti ti-link me-2 text-info"></i>Related Kanban Task
+                        </h6>
+                        <div class="d-flex align-items-center">
+                            <i class="ti ti-clipboard-check ti-md text-info me-3"></i>
+                            <div>
+                                <strong>${issue.linked_task.title}</strong>
+                                <br><small class="text-muted">Task in ${issue.workspace.title}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            ` : ''}
+            
+            ${issue.attachments && issue.attachments.length > 0 ? `
+                <!-- Attachments Card -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h6 class="card-title mb-3">
+                            <i class="ti ti-paperclip me-2"></i>Attachments (${issue.attachments.length})
+                        </h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            ${issue.attachments.map(att => `
+                                <a href="/storage/${att.file_path}" target="_blank" class="text-decoration-none">
+                                    ${att.file_path.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? `
+                                        <img src="/storage/${att.file_path}" class="img-thumbnail rounded" 
+                                             style="width: 100px; height: 100px; object-fit: cover;" 
+                                             alt="${att.file_name}">
+                                    ` : `
+                                        <div class="border rounded p-3 text-center" style="width: 100px;">
+                                            <i class="ti ti-file ti-lg text-muted"></i>
+                                            <br><small class="text-truncate d-block">${att.file_name.substring(0, 12)}</small>
+                                        </div>
+                                    `}
+                                </a>
+                            `).join('')}
+                        </div>
                     </div>
                 </div>
             ` : ''}
         `;
         
-        // Comments section
+        // Comments section with Vuexy timeline styling
         if (issue.comments && issue.comments.length > 0) {
             html += `
-                <div class="mb-3">
-                    <label class="form-label fw-bold"><i class="ti ti-messages me-1"></i>Comments & Activity (${issue.comments.length})</label>
-                </div>
+                <!-- Comments & Activity Card -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h6 class="card-title mb-4">
+                            <i class="ti ti-messages me-2"></i>Comments & Activity
+                            <span class="badge bg-label-secondary ms-2">${issue.comments.length}</span>
+                        </h6>
+                        <ul class="timeline ms-2">
             `;
             
-            issue.comments.forEach(comment => {
+            issue.comments.forEach((comment, index) => {
                 const isResolution = comment.is_resolution;
+                const isLast = index === issue.comments.length - 1;
                 html += `
-                    <div class="d-flex mb-3 ${isResolution ? 'bg-success-subtle p-3 rounded' : ''}">
-                        <div class="avatar avatar-sm me-3">
-                            <span class="avatar-initial rounded-circle bg-label-primary">
-                                ${comment.user.name.charAt(0).toUpperCase()}
-                            </span>
-                        </div>
-                        <div class="flex-grow-1">
-                            <div class="mb-1">
-                                <strong>${comment.user.name}</strong>
-                                <small class="text-muted ms-2">${new Date(comment.created_at).toLocaleString()}</small>
-                                ${isResolution ? '<span class="badge bg-success ms-2"><i class="ti ti-check-circle me-1"></i>Resolution</span>' : ''}
+                    <li class="timeline-item timeline-item-transparent ${isLast ? 'border-transparent' : ''} pb-4">
+                        <span class="timeline-point ${isResolution ? 'timeline-point-success' : 'timeline-point-primary'}"></span>
+                        <div class="timeline-event">
+                            <div class="timeline-header mb-2">
+                                <div class="d-flex align-items-center mb-1">
+                                    <div class="avatar avatar-xs me-2">
+                                        <span class="avatar-initial rounded-circle bg-label-primary">
+                                            ${comment.user.name.charAt(0).toUpperCase()}
+                                        </span>
+                                    </div>
+                                    <h6 class="mb-0">${comment.user.name}</h6>
+                                    ${isResolution ? '<span class="badge bg-success ms-2"><i class="ti ti-check-circle ti-xs me-1"></i>Resolution</span>' : ''}
+                                </div>
+                                <small class="text-muted">${new Date(comment.created_at).toLocaleString('en-US', { 
+                                    month: 'short', 
+                                    day: 'numeric', 
+                                    year: 'numeric',
+                                    hour: '2-digit', 
+                                    minute: '2-digit' 
+                                })}</small>
                             </div>
-                            <p class="mb-0">${comment.comment}</p>
+                            <p class="mb-2">${comment.comment}</p>
                             ${comment.attachments && comment.attachments.length > 0 ? `
-                                <div class="d-flex gap-2 mt-2 flex-wrap">
+                                <div class="d-flex gap-2 mt-3 flex-wrap">
                                     ${comment.attachments.map(att => `
-                                        <a href="/storage/${att.file_path}" target="_blank">
-                                            <img src="/storage/${att.file_path}" class="img-thumbnail rounded" style="max-width: 100px; max-height: 100px; object-fit: cover;">
+                                        <a href="/storage/${att.file_path}" target="_blank" class="text-decoration-none">
+                                            <img src="/storage/${att.file_path}" 
+                                                 class="img-thumbnail rounded" 
+                                                 style="width: 80px; height: 80px; object-fit: cover;" 
+                                                 alt="attachment">
                                         </a>
                                     `).join('')}
                                 </div>
                             ` : ''}
                         </div>
-                    </div>
+                    </li>
                 `;
             });
+            
+            html += `
+                        </ul>
+                    </div>
+                </div>
+            `;
         } else {
             html += `
-                <div class="text-center py-4">
-                    <i class="ti ti-message-off ti-lg text-muted mb-2"></i>
-                    <p class="text-muted mb-0">No comments yet</p>
+                <!-- Comments & Activity Card -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h6 class="card-title mb-3">
+                            <i class="ti ti-messages me-2"></i>Comments & Activity
+                        </h6>
+                        <div class="text-center py-5">
+                            <i class="ti ti-message-off ti-xl text-muted mb-3 d-block"></i>
+                            <p class="text-muted mb-0">No comments or activity yet</p>
+                            <small class="text-muted">Comments will appear here when added</small>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Change Requests section (if available)
+        if (issue.change_requests && issue.change_requests.length > 0) {
+            html += `
+                <!-- Change Requests Card -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h6 class="card-title mb-3">
+                            <i class="ti ti-git-pull-request me-2"></i>Change Requests
+                            <span class="badge bg-label-secondary ms-2">${issue.change_requests.length}</span>
+                        </h6>
+                        <div class="list-group list-group-flush">
+                            ${issue.change_requests.map(cr => `
+                                <div class="list-group-item px-0">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <strong class="text-primary">#CR${cr.id.toString().padStart(3, '0')}</strong>
+                                            <small class="text-muted ms-2">${cr.type === 'timeline' ? 'Timeline Extension' : 'Resource Change'}</small>
+                                            ${cr.timeline_extension_days ? `<br><span class="badge bg-label-info mt-1">+${cr.timeline_extension_days} days</span>` : ''}
+                                        </div>
+                                        <span class="${cr.status === 'approved' ? 'badge bg-success' : cr.status === 'rejected' ? 'badge bg-danger' : 'badge bg-label-warning'}">
+                                            ${cr.status.toUpperCase()}
+                                        </span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
                 </div>
             `;
         }
@@ -564,9 +735,31 @@ async function viewIssueDetail(issueId) {
         // Resolved info
         if (issue.resolved_at) {
             html += `
-                <div class="alert alert-success mt-4">
-                    <i class="ti ti-check-circle me-2"></i>
-                    <strong>Resolved</strong> on ${new Date(issue.resolved_at).toLocaleString()} by ${issue.resolver.name}
+                <!-- Resolution Card -->
+                <div class="card border-success mb-4">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar avatar-md me-3">
+                                <span class="avatar-initial rounded-circle bg-success">
+                                    <i class="ti ti-check ti-lg"></i>
+                                </span>
+                            </div>
+                            <div>
+                                <h6 class="mb-1">
+                                    <i class="ti ti-check-circle me-1 text-success"></i>Issue Resolved
+                                </h6>
+                                <small class="text-muted">
+                                    Resolved on ${new Date(issue.resolved_at).toLocaleDateString('en-US', { 
+                                        month: 'long', 
+                                        day: 'numeric', 
+                                        year: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    })} by <strong>${issue.resolver ? issue.resolver.name : 'Unknown'}</strong>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             `;
         }
