@@ -58,6 +58,12 @@ class KanbanTaskActivity extends Model
             'due_date_changed' => 'ti-calendar',
             'archived' => 'ti-archive',
             'restored' => 'ti-archive-off',
+            // Issue tracking icons
+            'issue_linked' => 'ti-alert-triangle',
+            'issue_resolved' => 'ti-check-circle',
+            'issue_closed' => 'ti-circle-x',
+            'issue_reopened' => 'ti-refresh-alert',
+            'issue_status_changed' => 'ti-exchange',
             default => 'ti-activity',
         };
     }
@@ -78,6 +84,12 @@ class KanbanTaskActivity extends Model
             'due_date_changed' => 'warning',
             'archived' => 'secondary',
             'restored' => 'success',
+            // Issue tracking colors
+            'issue_linked' => 'danger',
+            'issue_resolved' => 'success',
+            'issue_closed' => 'secondary',
+            'issue_reopened' => 'warning',
+            'issue_status_changed' => 'info',
             default => 'secondary',
         };
     }

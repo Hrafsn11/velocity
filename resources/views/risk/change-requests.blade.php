@@ -270,5 +270,16 @@ function viewCR(crId) {
         timer: 3000
     });
 @endif
+
+// ===== Initialize Select2 for filter dropdown (minimal styling) =====
+$(document).ready(function() {
+    if ($('select[name="workspace_id"]').length) {
+        $('select[name="workspace_id"]').select2({
+            placeholder: 'All Workspaces',
+            allowClear: false,
+            minimumResultsForSearch: 5  // Only show search if > 5 items
+        });
+    }
+});
 </script>
 @endpush

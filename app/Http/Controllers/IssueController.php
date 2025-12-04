@@ -26,7 +26,7 @@ class IssueController extends Controller
     {
         $workspaceId = $request->get('workspace_id');
         
-        $query = Issue::with(['workspace', 'risk', 'assignee', 'creator']);
+        $query = Issue::with(['workspace', 'risk.workspace', 'assignee', 'creator']);
         
         if ($workspaceId) {
             $query->where('workspace_id', $workspaceId);
@@ -99,7 +99,7 @@ class IssueController extends Controller
     public function show(Issue $issue): JsonResponse
     {
         $issue->load(['workspace', 'risk', 'linkedTask', 'assignee.user', 'creator', 
-                      'comments.user', 'comments.attachments', 'attachments', 'resolver']);
+                      'comments.user', 'comments.attachments', 'attachments', 'resolver', 'changeRequests']);
         
         return response()->json([
             'success' => true,

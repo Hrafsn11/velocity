@@ -115,6 +115,62 @@ class KanbanActivityService
         );
     }
 
+    // Issue Tracking Activities
+    public function logIssueLinked(KanbanTask $task, string $issueCode, string $issueTitle): void
+    {
+        $this->log(
+            $task, 
+            'issue_linked', 
+            "Issue {$issueCode} linked: {$issueTitle}",
+            null,
+            ['issue_code' => $issueCode, 'issue_title' => $issueTitle]
+        );
+    }
+
+    public function logIssueResolved(KanbanTask $task, string $issueCode): void
+    {
+        $this->log(
+            $task,
+            'issue_resolved',
+            "Issue {$issueCode} resolved",
+            ['status' => 'open'],
+            ['status' => 'resolved']
+        );
+    }
+
+    public function logIssueClosed(KanbanTask $task, string $issueCode): void
+    {
+        $this->log(
+            $task,
+            'issue_closed',
+            "Issue {$issueCode} closed",
+            ['status' => 'resolved'],
+            ['status' => 'closed']
+        );
+    }
+
+    public function logIssueReopened(KanbanTask $task, string $issueCode): void
+    {
+        $this->log(
+            $task,
+            'issue_reopened',
+            "Issue {$issueCode} reopened",
+            ['status' => 'resolved'],
+            ['status' => 'reopened']
+        );
+    }
+
+    public function logIssueStatusChanged(KanbanTask $task, string $issueCode, string $oldStatus, string $newStatus): void
+    {
+        $this->log(
+            $task,
+            'issue_status_changed',
+            "Issue {$issueCode} status changed from {$oldStatus} to {$newStatus}",
+            ['status' => $oldStatus],
+            ['status' => $newStatus]
+        );
+    }
+
     private function log(
         KanbanTask $task,
         string $action,
