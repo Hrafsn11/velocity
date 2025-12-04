@@ -5,9 +5,25 @@ namespace App\Services;
 use App\Models\KanbanTask;
 use App\Models\KanbanTaskActivity;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Collection;
 
+/**
+ * Kanban Activity Service
+ * 
+ * Handles logging and retrieval of activities for Kanban tasks.
+ * Tracks task creation, updates, moves, assignments, comments, attachments,
+ * and issue-related activities.
+ * 
+ * @package App\Services
+ */
 class KanbanActivityService
 {
+    /**
+     * Log task creation activity
+     * 
+     * @param KanbanTask $task The created task
+     * @return void
+     */
     public function logTaskCreated(KanbanTask $task): void
     {
         $this->log($task, 'created', "Created task \"{$task->title}\"");
@@ -104,6 +120,15 @@ class KanbanActivityService
     }
 
     // Issue Tracking Activities
+    
+    /**
+     * Log when an issue is linked to a task
+     * 
+     * @param KanbanTask $task The task the issue is linked to
+     * @param string $issueCode The issue code (e.g., ISS001)
+     * @param string $issueTitle The issue title
+     * @return void
+     */
     public function logIssueLinked(KanbanTask $task, string $issueCode, string $issueTitle): void
     {
         $this->log(
@@ -188,7 +213,17 @@ class KanbanActivityService
         };
     }
 
-    public function getTaskActivities(string $taskId, int $limit = 50)
+    /**
+     * Get all activities for a specific task
+     * 
+     * Returns formatted activity data with user information and timestamps.
+     * Activities are sorted by most recent first.
+     * 
+     * @param string $taskId The task ID to get activities for
+     * @param int $limit Maximum number of activities to return (default: 50)
+     * @return Collection Collection of formatted activity data
+     */
+    public function getTaskActivities(string $taskId, int $limit = 50): Collection
     {
         return KanbanTaskActivity::where('task_id', $taskId)
             ->with('user')

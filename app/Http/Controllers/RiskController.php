@@ -10,15 +10,37 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
+/**
+ * Risk Controller
+ * 
+ * Handles all HTTP requests related to risk management including:
+ * - Dashboard with statistics and workspace filtering
+ * - Risk listing with filters
+ * - Risk CRUD operations
+ * - Risk to Issue conversion
+ * 
+ * @package App\Http\Controllers
+ */
 class RiskController extends Controller
 {
+    /**
+     * Create a new controller instance
+     * 
+     * @param RiskService $riskService Service for risk business logic
+     */
     public function __construct(
         private readonly RiskService $riskService
     ) {
     }
 
     /**
-     * Display global dashboard
+     * Display the global risk management dashboard
+     * 
+     * Shows statistics for all risks or filtered by workspace.
+     * Includes risk counts by status, urgency, and workspace comparison.
+     * 
+     * @param Request $request HTTP request with optional workspace_id filter
+     * @return View Dashboard view with statistics and workspace data
      */
     public function dashboard(Request $request): View
     {
@@ -26,7 +48,7 @@ class RiskController extends Controller
         
         $stats = $this->riskService->getDashboardStats($workspaceId);
         
-        // Get workspaces with risk counts
+        // Get workspaces with risk counts (eager load all counts in one query)
         $workspaces = Workspace::withCount([
             'risks',
             'risks as active_risks_count' => function($q) {
@@ -45,26 +67,80 @@ class RiskController extends Controller
             'changeRequests'
         ])->get();
 
-        return view('risk.dashboard', compact('stats', 'workspaces', 'workspaceId'));
+        // Single workspace view: load workspace details and recent data
+        $workspace = null;
+        $recentRisks = null;
+        $recentIssues = null;
+        
+        if ($workspaceId) {
+            // Eager load workspace with counts
+            $workspace = Workspace::withCount(['members', 'kanbanTasks'])
+                ->find($workspaceId);
+            
+            // Get 5 most recent risks for this workspace (optimized with select)
+            $recentRisks = Risk::where('workspace_id', $workspaceId)
+                ->with(['creator:user_id,name'])
+                ->latest()
+                ->limit(5)
+                ->get();
+            
+            // Get 5 most recent issues from risks in this workspace (optimized)
+            $recentIssues = \App\Models\Issue::where('workspace_id', $workspaceId)
+                ->whereNotNull('risk_id')
+                ->with([
+                    'risk:risk_id,code',
+                    'assignee.user:user_id,name'
+                ])
+                ->latest()
+                ->limit(5)
+                ->get();
+        }
+
+        return view('risk.dashboard', compact(
+            'stats', 
+            'workspaces', 
+            'workspaceId',
+            'workspace',
+            'recentRisks',
+            'recentIssues'
+        ));
     }
 
     /**
-     * Display list of risks
+     * Display a listing of risks with optional workspace filter
+     * 
+     * Shows all risks with their relationships (workspace, creator, issues, affected task).
+     * Calculates statistics for total, critical, active, and mitigated risks.
+     * Eager loads workspaces with their tasks and members for the UI.
+     * 
+     * @param Request $request HTTP request with optional workspace_id filter
+     * @return View Risk index view with risks list and statistics
      */
     public function index(Request $request): View
     {
         $workspaceId = $request->get('workspace_id');
         
-        $query = Risk::with(['workspace', 'creator', 'issues', 'affectedTask']);
+        // Eager load relationships with selective fields to reduce query payload
+        $query = Risk::with([
+            'workspace:workspace_id,title',
+            'creator:user_id,name',
+            'issues:issue_id,risk_id,code,title,status',
+            'affectedTask:task_id,title'
+        ]);
         
         if ($workspaceId) {
             $query->where('workspace_id', $workspaceId);
         }
         
         $risks = $query->latest()->get();
-        $workspaces = Workspace::with(['kanbanTasks' => function($q) {
-            $q->select('task_id', 'workspace_id', 'title');
-        }, 'members.user'])->get();
+        
+        // Load workspaces with nested relationships (one query per relationship)
+        $workspaces = Workspace::with([
+            'kanbanTasks' => function($q) {
+                $q->select('task_id', 'workspace_id', 'title');
+            }, 
+            'members.user:user_id,name'
+        ])->get();
         
         // Calculate stats
         $stats = [
@@ -78,7 +154,13 @@ class RiskController extends Controller
     }
 
     /**
-     * Store new risk
+     * Store a newly created risk
+     * 
+     * Validates the request using RiskRequest and delegates creation to RiskService.
+     * The service handles code generation, urgency calculation, and activity logging.
+     * 
+     * @param RiskRequest $request Validated risk data
+     * @return RedirectResponse Redirects to risk index with success message
      */
     public function store(RiskRequest $request): RedirectResponse
     {
@@ -90,7 +172,14 @@ class RiskController extends Controller
     }
 
     /**
-     * Update risk
+     * Update the specified risk
+     * 
+     * Validates the request using RiskRequest and delegates update to RiskService.
+     * The service handles urgency recalculation and change detection/logging.
+     * 
+     * @param RiskRequest $request Validated risk data
+     * @param Risk $risk The risk to update (route model binding)
+     * @return RedirectResponse Redirects to risk index with success message
      */
     public function update(RiskRequest $request, Risk $risk): RedirectResponse
     {
@@ -102,7 +191,13 @@ class RiskController extends Controller
     }
 
     /**
-     * Mark risk as mitigated
+     * Mark a risk as mitigated
+     * 
+     * Updates the risk status to 'mitigated' indicating that mitigation actions
+     * have been successfully completed.
+     * 
+     * @param Risk $risk The risk to mark as mitigated (route model binding)
+     * @return RedirectResponse Redirects to risk index with success message
      */
     public function markMitigated(Risk $risk): RedirectResponse
     {
@@ -114,7 +209,13 @@ class RiskController extends Controller
     }
 
     /**
-     * Delete risk
+     * Remove the specified risk from storage
+     * 
+     * Performs a soft delete on the risk. The risk can be restored later if needed.
+     * All related activities are preserved.
+     * 
+     * @param Risk $risk The risk to delete (route model binding)
+     * @return RedirectResponse Redirects to risk index with success message
      */
     public function destroy(Risk $risk): RedirectResponse
     {
@@ -126,7 +227,18 @@ class RiskController extends Controller
     }
 
     /**
-     * Convert risk to issue
+     * Convert a risk to an issue when it materializes
+     * 
+     * Validates issue data and delegates conversion to RiskService.
+     * This process:
+     * - Creates a new issue linked to the risk
+     * - Updates risk status to 'materialized'
+     * - Logs activities for both risk and issue
+     * - Optionally links to a kanban task
+     * 
+     * @param Request $request HTTP request with issue data
+     * @param Risk $risk The risk to convert (route model binding)
+     * @return RedirectResponse Redirects to issues page with success message
      */
     public function convertToIssue(Request $request, Risk $risk): RedirectResponse
     {
