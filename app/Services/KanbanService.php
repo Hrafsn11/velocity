@@ -254,6 +254,8 @@ class KanbanService
             }),
             'attachments_count' => $task->attachments_count ?? 0,
             'comments_count' => $task->comments_count ?? 0,
+            'active_issues_count' => $task->activeIssuesCount(),
+            'has_active_issues' => $task->hasActiveIssues(),
         ];
     }
 }

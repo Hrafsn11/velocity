@@ -186,15 +186,16 @@
     return {
       id: task.id,
       title: `<span class="kanban-text">${task.title}</span>`,
-      'data-eid': task.id,
-      'data-badge': task.label || '',
-      'data-badge-text': task.label || '',
-      'data-due-date': task.due_date || '',
-      'data-assigned': assignedImages,
-      'data-members': assignedNames,
-      'data-attachments': task.attachments_count || 0,
-      'data-comments': task.comments_count || 0,
-      'data-priority': task.priority || 'medium'
+      eid: task.id,
+      badge: task.label || '',
+      'badge-text': task.label || '',
+      'due-date': task.due_date || '',
+      assigned: undefined, // Hidden - undefined prevents avatar rendering
+      members: assignedNames,
+      attachments: task.attachments_count || 0,
+      comments: task.comments_count || 0,
+      priority: task.priority || 'medium',
+      issues: task.active_issues_count || 0
     };
   }
 

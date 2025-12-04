@@ -107,8 +107,8 @@
     <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
 
     {{-- Custom Laravel Backend Integration (must be loaded BEFORE app-kanban.js) --}}
-    <script src="{{ asset('assets/js/app-kanban-custom.js') }}"></script>
-    <script src="{{ asset('assets/js/app-kanban.js') }}"></script>
+    <script src="{{ asset('assets/js/app-kanban-custom.js') }}?v={{ time() }}"></script>
+    <script src="{{ asset('assets/js/app-kanban.js') }}?v={{ time() }}"></script>
 
     @stack('scripts')
 </body>
