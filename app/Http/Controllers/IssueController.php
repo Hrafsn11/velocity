@@ -26,7 +26,7 @@ class IssueController extends Controller
     {
         $workspaceId = $request->get('workspace_id');
         
-        $query = Issue::with(['workspace', 'risk', 'assignee', 'creator']);
+        $query = Issue::with(['workspace', 'risk.workspace', 'assignee', 'creator']);
         
         if ($workspaceId) {
             $query->where('workspace_id', $workspaceId);

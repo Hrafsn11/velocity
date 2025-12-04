@@ -84,7 +84,7 @@
                             <br><small class="text-muted">{{ $issue->workspace->title }}</small>
                         </td>
                         <td>
-                            @if($issue->isFromRisk())
+                            @if($issue->isFromRisk() && $issue->risk && $issue->risk->workspace)
                                 <span class="badge bg-label-primary">
                                     {{ strtoupper(substr($issue->risk->workspace->title, 0, 2)) }}
                                 </span>
