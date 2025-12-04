@@ -3,12 +3,17 @@
 namespace App\Services;
 
 use App\Models\Issue;
+use App\Models\KanbanTask;
 use App\Models\RiskActivity;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
 class IssueService
 {
+    public function __construct(
+        private readonly KanbanActivityService $activityService
+    ) {
+    }
     /**
      * Generate unique code for issue per workspace
      */
@@ -39,6 +44,14 @@ class IssueService
 
             $this->logActivity($issue, 'created', 'Issue created');
 
+            // Log to task activity if linked to a task
+            if ($issue->linked_task_id) {
+                $task = KanbanTask::find($issue->linked_task_id);
+                if ($task) {
+                    $this->activityService->logIssueLinked($task, $issue->code, $issue->title);
+                }
+            }
+
             return $issue->load(['workspace', 'risk', 'assignee', 'creator']);
         });
     }
@@ -50,11 +63,32 @@ class IssueService
     {
         return DB::transaction(function () use ($issue, $data) {
             $changes = $this->detectChanges($issue, $data);
+            $oldStatus = $issue->status;
 
             $issue->update($data);
 
             if (!empty($changes)) {
                 $this->logActivity($issue, 'updated', 'Issue updated', $changes);
+                
+                // Log to task activity if status changed and linked to a task
+                if (isset($changes['status']) && $issue->linked_task_id) {
+                    $task = KanbanTask::find($issue->linked_task_id);
+                    if ($task) {
+                        $newStatus = $issue->status;
+                        
+                        // Use specific methods for common status changes
+                        if ($newStatus === 'resolved' && $oldStatus !== 'resolved') {
+                            $this->activityService->logIssueResolved($task, $issue->code);
+                        } elseif ($newStatus === 'closed' && $oldStatus !== 'closed') {
+                            $this->activityService->logIssueClosed($task, $issue->code);
+                        } elseif ($newStatus === 'reopened' && $oldStatus !== 'reopened') {
+                            $this->activityService->logIssueReopened($task, $issue->code);
+                        } else {
+                            // Generic status change
+                            $this->activityService->logIssueStatusChanged($task, $issue->code, $oldStatus, $newStatus);
+                        }
+                    }
+                }
             }
 
             return $issue->fresh(['workspace', 'risk', 'assignee', 'creator']);
@@ -159,6 +193,14 @@ class IssueService
             ]);
 
             $this->logActivity($issue, 'resolved', 'Issue resolved');
+
+            // Log to task activity if linked to a task
+            if ($issue->linked_task_id) {
+                $task = KanbanTask::find($issue->linked_task_id);
+                if ($task) {
+                    $this->activityService->logIssueResolved($task, $issue->code);
+                }
+            }
 
             return $issue->fresh(['comments', 'attachments', 'resolver']);
         });
