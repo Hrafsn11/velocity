@@ -207,7 +207,7 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Workspace <span class="text-danger">*</span></label>
-                        <select name="workspace_id" id="reportWorkspaceSelect" class="form-select" required onchange="loadTasksForReport(this.value); loadMembersForReport(this.value);">
+                        <select name="workspace_id" id="reportWorkspaceSelect" class="form-select" required>
                             <option value="">Select Workspace</option>
                             @foreach($workspaces as $ws)
                                 <option value="{{ $ws->workspace_id }}">{{ $ws->title }}</option>
@@ -387,32 +387,34 @@ const workspaceMembers = @json($workspaces->mapWithKeys(function($ws) {
 
 // Load tasks for Report Issue modal
 function loadTasksForReport(workspaceId) {
-    const select = document.getElementById('reportTaskSelect');
-    select.innerHTML = '<option value="">No specific task</option>';
+    const select = $('#reportTaskSelect');
+    select.empty().append('<option value="">No specific task</option>');
     
     if (workspaceId && workspaceTasks[workspaceId]) {
         workspaceTasks[workspaceId].forEach(task => {
-            const option = document.createElement('option');
-            option.value = task.task_id;
-            option.textContent = task.title;
-            select.appendChild(option);
+            const option = new Option(task.title, task.task_id);
+            select.append(option);
         });
     }
+    
+    // Trigger Select2 update
+    select.trigger('change');
 }
 
 // Load members for Report Issue modal
 function loadMembersForReport(workspaceId) {
-    const select = document.getElementById('reportAssigneeSelect');
-    select.innerHTML = '<option value="">Unassigned</option>';
+    const select = $('#reportAssigneeSelect');
+    select.empty().append('<option value="">Unassigned</option>');
     
     if (workspaceId && workspaceMembers[workspaceId]) {
         workspaceMembers[workspaceId].forEach(member => {
-            const option = document.createElement('option');
-            option.value = member.employee_id;
-            option.textContent = member.user.name + ' - ' + member.role;
-            select.appendChild(option);
+            const option = new Option(member.user.name + ' - ' + member.role, member.employee_id);
+            select.append(option);
         });
     }
+    
+    // Trigger Select2 update
+    select.trigger('change');
 }
 
 function createCR(issueId, issueCode) {
@@ -674,5 +676,77 @@ document.addEventListener('DOMContentLoaded', function() {
         timer: 3000
     });
 @endif
+
+// ===== Initialize Select2 for all dropdowns =====
+function initSelect2Issues() {
+    // Add Issue Modal - Workspace (FIX: Correct modal ID is addIssueModal, not reportIssueModal)
+    if ($('#reportWorkspaceSelect').length && !$('#reportWorkspaceSelect').hasClass('select2-hidden-accessible')) {
+        $('#reportWorkspaceSelect').select2({
+            dropdownParent: $('#addIssueModal'),
+            placeholder: 'Select Workspace',
+            allowClear: false
+        }).on('change', function() {
+            const workspaceId = $(this).val();
+            loadTasksForReport(workspaceId);
+            loadMembersForReport(workspaceId);
+        });
+    }
+    
+    // Add Issue Modal - Task
+    if ($('#reportTaskSelect').length && !$('#reportTaskSelect').hasClass('select2-hidden-accessible')) {
+        $('#reportTaskSelect').select2({
+            dropdownParent: $('#addIssueModal'),
+            placeholder: 'No specific task',
+            allowClear: true
+        });
+    }
+    
+    // Add Issue Modal - Assignee
+    if ($('#reportAssigneeSelect').length && !$('#reportAssigneeSelect').hasClass('select2-hidden-accessible')) {
+        $('#reportAssigneeSelect').select2({
+            dropdownParent: $('#addIssueModal'),
+            placeholder: 'Unassigned',
+            allowClear: true
+        });
+    }
+}
+
+// ===== Initialize Flatpickr for date fields =====
+function initFlatpickrIssues() {
+    // Deadline in Add Issue Modal (FIX: Correct modal ID)
+    const deadlineInput = document.querySelector('#addIssueModal input[name="deadline"]');
+    if (deadlineInput && !deadlineInput._flatpickr) {
+        flatpickr(deadlineInput, {
+            dateFormat: 'Y-m-d',
+            minDate: 'today',
+            altInput: true,
+            altFormat: 'F j, Y',
+            locale: {
+                firstDayOfWeek: 1
+            }
+        });
+    }
+}
+
+// Initialize on page load
+$(document).ready(function() {
+    initSelect2Issues();
+    initFlatpickrIssues();
+});
+
+// Re-initialize when modal is shown (FIX: Correct modal ID)
+$('#addIssueModal').on('shown.bs.modal', function() {
+    initSelect2Issues();
+    initFlatpickrIssues();
+});
+
+// Destroy Select2 when modal is hidden (FIX: Correct modal ID)
+$('#addIssueModal').on('hidden.bs.modal', function() {
+    $(this).find('select').each(function() {
+        if ($(this).hasClass('select2-hidden-accessible')) {
+            $(this).select2('destroy');
+        }
+    });
+});
 </script>
 @endpush

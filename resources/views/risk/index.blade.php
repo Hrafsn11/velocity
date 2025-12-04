@@ -232,7 +232,7 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Workspace <span class="text-danger">*</span></label>
-                        <select name="workspace_id" id="addWorkspaceSelect" class="form-select" required onchange="loadTasksForAdd(this.value)">
+                        <select name="workspace_id" id="addWorkspaceSelect" class="form-select" required>
                             <option value="">Select Workspace</option>
                             @foreach($workspaces as $ws)
                                 <option value="{{ $ws->workspace_id }}">{{ $ws->title }}</option>
@@ -241,7 +241,7 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Category <span class="text-danger">*</span></label>
-                        <select name="category" class="form-select" required>
+                        <select name="category" id="addCategory" class="form-select" required>
                             <option value="Technical">Technical</option>
                             <option value="SDM">SDM</option>
                             <option value="Financial">Financial</option>
@@ -302,7 +302,7 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Workspace <span class="text-danger">*</span></label>
-                        <select name="workspace_id" id="editWorkspaceSelect" class="form-select" required onchange="loadTasksForEdit(this.value)">
+                        <select name="workspace_id" id="editWorkspaceSelect" class="form-select" required>
                             @foreach($workspaces as $ws)
                                 <option value="{{ $ws->workspace_id }}">{{ $ws->title }}</option>
                             @endforeach
@@ -503,36 +503,36 @@ const workspaceMembers = @json($workspaces->mapWithKeys(function($ws) {
 
 // Load tasks for Add form
 function loadTasksForAdd(workspaceId) {
-    const select = document.getElementById('addTaskSelect');
-    select.innerHTML = '<option value="">Not related to specific task</option>';
+    const select = $('#addTaskSelect');
+    const currentValue = select.val();
+    select.empty().append('<option value="">Not related to specific task</option>');
     
     if (workspaceId && workspaceTasks[workspaceId]) {
         workspaceTasks[workspaceId].forEach(task => {
-            const option = document.createElement('option');
-            option.value = task.task_id; // ✅ FIX: Use task_id instead of title
-            option.textContent = task.title;
-            select.appendChild(option);
+            const option = new Option(task.title, task.task_id);
+            select.append(option);
         });
     }
+    
+    // Trigger Select2 update
+    select.trigger('change');
 }
 
 // Load tasks for Edit form
 function loadTasksForEdit(workspaceId) {
-    const select = document.getElementById('editTaskSelect');
-    const currentValue = select.dataset.currentValue || '';
-    select.innerHTML = '<option value="">Not related to specific task</option>';
+    const select = $('#editTaskSelect');
+    const currentValue = select.data('currentValue') || select.val() || '';
+    select.empty().append('<option value="">Not related to specific task</option>');
     
     if (workspaceId && workspaceTasks[workspaceId]) {
         workspaceTasks[workspaceId].forEach(task => {
-            const option = document.createElement('option');
-            option.value = task.task_id; // ✅ FIX: Use task_id instead of title
-            option.textContent = task.title;
-            if (task.task_id === currentValue) { // ✅ FIX: Compare task_id, not title
-                option.selected = true;
-            }
-            select.appendChild(option);
+            const option = new Option(task.title, task.task_id, false, task.task_id === currentValue);
+            select.append(option);
         });
     }
+    
+    // Trigger Select2 update
+    select.val(currentValue).trigger('change');
 }
 
 // View Risk Details
@@ -672,6 +672,124 @@ document.querySelectorAll('.delete-risk-form').forEach(form => {
                 form.submit();
             }
         });
+    });
+});
+
+// ===== Initialize Select2 for all dropdowns =====
+function initSelect2() {
+    // Add Risk Modal - Workspace
+    if ($('#addWorkspaceSelect').length && !$('#addWorkspaceSelect').hasClass('select2-hidden-accessible')) {
+        $('#addWorkspaceSelect').select2({
+            dropdownParent: $('#addRiskModal'),
+            placeholder: 'Select Workspace',
+            allowClear: false
+        }).on('change', function() {
+            loadTasksForAdd($(this).val());
+        });
+    }
+    
+    // Add Risk Modal - Category
+    if ($('#addCategory').length && !$('#addCategory').hasClass('select2-hidden-accessible')) {
+        $('#addCategory').select2({
+            dropdownParent: $('#addRiskModal'),
+            placeholder: 'Select Category',
+            allowClear: false,
+            minimumResultsForSearch: Infinity
+        });
+    }
+    
+    // Add Risk Modal - Task
+    if ($('#addTaskSelect').length && !$('#addTaskSelect').hasClass('select2-hidden-accessible')) {
+        $('#addTaskSelect').select2({
+            dropdownParent: $('#addRiskModal'),
+            placeholder: 'Not related to specific task',
+            allowClear: true
+        });
+    }
+    
+    // Edit Risk Modal - Workspace
+    if ($('#editWorkspaceSelect').length && !$('#editWorkspaceSelect').hasClass('select2-hidden-accessible')) {
+        $('#editWorkspaceSelect').select2({
+            dropdownParent: $('#editRiskModal'),
+            placeholder: 'Select Workspace',
+            allowClear: false
+        }).on('change', function() {
+            loadTasksForEdit($(this).val());
+        });
+    }
+    
+    // Edit Risk Modal - Category
+    if ($('#editCategory').length && !$('#editCategory').hasClass('select2-hidden-accessible')) {
+        $('#editCategory').select2({
+            dropdownParent: $('#editRiskModal'),
+            placeholder: 'Select Category',
+            allowClear: false,
+            minimumResultsForSearch: Infinity
+        });
+    }
+    
+    // Edit Risk Modal - Task
+    if ($('#editTaskSelect').length && !$('#editTaskSelect').hasClass('select2-hidden-accessible')) {
+        $('#editTaskSelect').select2({
+            dropdownParent: $('#editRiskModal'),
+            placeholder: 'Not related to specific task',
+            allowClear: true
+        });
+    }
+    
+    // Convert to Issue Modal - Assignee
+    if ($('#convertAssigneeSelect').length && !$('#convertAssigneeSelect').hasClass('select2-hidden-accessible')) {
+        $('#convertAssigneeSelect').select2({
+            dropdownParent: $('#convertIssueModal'),
+            placeholder: 'Unassigned',
+            allowClear: true
+        });
+    }
+}
+
+// ===== Initialize Flatpickr for date fields =====
+function initFlatpickr() {
+    // Deadline in Convert Issue Modal
+    const deadlineInput = document.querySelector('#convertIssueModal input[name="deadline"]');
+    if (deadlineInput && !deadlineInput._flatpickr) {
+        flatpickr(deadlineInput, {
+            dateFormat: 'Y-m-d',
+            minDate: 'today',
+            altInput: true,
+            altFormat: 'F j, Y',
+            locale: {
+                firstDayOfWeek: 1
+            }
+        });
+    }
+}
+
+// Initialize on page load
+$(document).ready(function() {
+    initSelect2();
+    initFlatpickr();
+});
+
+// Re-initialize when modals are shown
+$('#addRiskModal').on('shown.bs.modal', function() {
+    initSelect2();
+});
+
+$('#editRiskModal').on('shown.bs.modal', function() {
+    initSelect2();
+});
+
+$('#convertIssueModal').on('shown.bs.modal', function() {
+    initSelect2();
+    initFlatpickr();
+});
+
+// Destroy Select2 when modals are hidden to prevent issues
+$('#addRiskModal, #editRiskModal, #convertIssueModal').on('hidden.bs.modal', function() {
+    $(this).find('select').each(function() {
+        if ($(this).hasClass('select2-hidden-accessible')) {
+            $(this).select2('destroy');
+        }
     });
 });
 </script>
