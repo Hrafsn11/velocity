@@ -1,9 +1,4 @@
-/**
- * App Kanban Custom - Laravel Backend Integration
- * This file extends the existing app-kanban.js to work with Laravel backend API
- */
-
-'use strict';
+"use strict";
 
 (function () {
   const workspaceElement = document.querySelector('.app-kanban');
@@ -18,22 +13,19 @@
   const assetsPath = document.querySelector('html').getAttribute('data-assets-path');
   let currentTaskId = null;
 
-  // Create global kanbanManager object for onclick handlers
   window.kanbanManager = window.kanbanManager || {};
 
-  // Drawer mode state
-  let drawerMode = 'edit'; // 'create' or 'edit'
+  let drawerMode = 'edit';
   let currentBoardId = null;
 
-  // Function to open drawer in create or edit mode
   window.openDrawer = function(mode, boardId = null, taskId = null) {
     drawerMode = mode;
     currentBoardId = boardId;
     
     const drawer = document.getElementById('kanban-update-item-sidebar');
     const title = drawer.querySelector('.offcanvas-title');
-    const updateBtn = drawer.querySelector('.btn-primary');
-    const deleteBtn = drawer.querySelector('.btn-label-danger');
+    const updateBtn = drawer.querySelector('#update-task-btn');
+    const deleteBtn = drawer.querySelector('#delete-task-btn');
     
     if (mode === 'create') {
       title.textContent = 'Create New Task';
@@ -51,9 +43,7 @@
         document.getElementById('assignees').value = null;
       }
       document.getElementById('attachments-list').innerHTML = '<small class="text-muted">No attachments</small>';
-      document.getElementById('comments-list').innerHTML = '<small class="text-muted">No comments yet</small>';
       document.getElementById('attachments-count').textContent = '0';
-      document.getElementById('comments-count').textContent = '0';
       document.getElementById('activity-timeline').innerHTML = '<p class="text-muted text-center py-4"><i class="ti ti-timeline-event ti-lg d-block mb-2"></i>No activity yet</p>';
       
       // Reinitialize Select2 for create mode
@@ -136,7 +126,6 @@
     bsOffcanvas.show();
   };
 
-  // Override the default kanban data fetch
   window.kanbanDataFetch = async function() {
     try {
       const response = await fetch(`/workspaces/${workspaceId}/kanban/boards`, {
@@ -164,7 +153,6 @@
     }
   };
 
-  // Transform Laravel board data to jKanban format
   function transformBoardsData(boards) {
     return boards.map(board => ({
       id: board.id,
@@ -173,7 +161,6 @@
     }));
   }
 
-  // Transform Laravel task data to jKanban item format
   function transformTaskData(task) {
     const assignedImages = task.assignees.map(a => {
       // Extract filename from avatar URL or use default
@@ -199,7 +186,6 @@
     };
   }
 
-  // Load task details when clicked
   window.loadTaskDetails = async function(taskId) {
     try {
       currentTaskId = taskId;
@@ -228,7 +214,6 @@
     }
   };
 
-  // Populate drawer with task data
   function populateTaskDrawer(task) {
     // Set current board ID from task
     currentBoardId = task.board_id;
@@ -272,14 +257,9 @@
       }
     }, 50);
 
-    // Render attachments
     renderAttachments(task.attachments || []);
-
-    // Render comments
-    renderComments(task.comments || []);
   }
 
-  // Render attachments list
   function renderAttachments(attachments) {
     const attachmentsList = document.getElementById('attachments-list');
     const attachmentsCount = document.getElementById('attachments-count');
@@ -314,46 +294,8 @@
     `).join('');
   }
 
-  // Render comments list
-  function renderComments(comments) {
-    const commentsList = document.getElementById('comments-list');
-    const commentsCount = document.getElementById('comments-count');
-    
-    if (commentsCount) {
-      commentsCount.textContent = comments.length;
-      commentsCount.className = comments.length > 0 ? 'badge bg-label-primary ms-1' : 'badge bg-label-secondary ms-1';
-    }
+  
 
-    if (!commentsList) return;
-
-    if (comments.length === 0) {
-      commentsList.innerHTML = '<small class="text-muted">No comments yet</small>';
-      return;
-    }
-
-    commentsList.innerHTML = comments.map(comment => {
-      const avatarHtml = comment.user.avatar_url 
-        ? `<img src="${comment.user.avatar_url}" alt="${comment.user.name}" class="rounded-circle">`
-        : `<span class="avatar-initial rounded-circle bg-label-primary">${comment.user.name.charAt(0)}</span>`;
-
-      return `
-        <div class="d-flex gap-3 mb-3 pb-3 border-bottom">
-          <div class="avatar avatar-sm flex-shrink-0">
-            ${avatarHtml}
-          </div>
-          <div class="flex-grow-1">
-            <div class="d-flex justify-content-between align-items-center mb-1">
-              <h6 class="mb-0">${comment.user.name}</h6>
-              <small class="text-muted">${formatDateTime(comment.created_at)}</small>
-            </div>
-            <p class="mb-0">${comment.comment}</p>
-          </div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  // Format date time helper
   function formatDateTime(dateString) {
     const date = new Date(dateString);
     const now = new Date();
@@ -373,7 +315,6 @@
     });
   }
 
-  // Load task activities
   async function loadTaskActivities(taskId) {
     try {
       const response = await fetch(`/workspaces/${workspaceId}/kanban/tasks/${taskId}/activities`, {
@@ -397,7 +338,6 @@
     }
   }
 
-  // Render activities in timeline
   function renderActivities(activities) {
     const timeline = document.getElementById('activity-timeline');
     if (!timeline) return;
@@ -412,6 +352,26 @@
         ? `<img src="${activity.user.avatar}" alt="${activity.user.name}" class="rounded-circle">`
         : `<span class="avatar-initial rounded-circle bg-label-primary">${activity.user.initials}</span>`;
 
+      // Build extra content: comment HTML or attachment link
+      let extraHtml = '';
+      if (activity.comment) {
+        // comment may contain HTML from Quill
+        extraHtml = `
+          <div class="mt-2 border rounded p-2 bg-light">
+            ${activity.comment}
+          </div>
+        `;
+      } else if (activity.attachment && activity.attachment.file_name) {
+        const filePath = activity.attachment.file_path ? `/storage/${activity.attachment.file_path}` : '#';
+        extraHtml = `
+          <div class="mt-2">
+            <a href="${filePath}" target="_blank" class="text-decoration-none">
+              <i class="ti ti-paperclip me-1"></i>${activity.attachment.file_name}
+            </a>
+          </div>
+        `;
+      }
+
       return `
         <div class="media mb-4 d-flex align-items-start">
           <div class="avatar avatar-sm me-3 flex-shrink-0">
@@ -423,13 +383,13 @@
               <strong>${activity.user.name}</strong> ${activity.description}
             </p>
             <small class="text-muted">${activity.time}</small>
+            ${extraHtml}
           </div>
         </div>
       `;
     }).join('');
   }
 
-  // Create new task
   window.createTask = async function() {
     const assigneesSelect = document.getElementById('assignees');
     const assigneesValue = assigneesSelect ? $('#assignees').val() : [];
@@ -502,7 +462,6 @@
     }
   };
 
-  // Update task when form is submitted
   window.updateTask = async function() {
     if (!currentTaskId) return;
 
@@ -559,7 +518,6 @@
     }
   };
 
-  // Delete task
   window.deleteTask = async function() {
     if (!currentTaskId) return;
 
@@ -621,7 +579,6 @@
     }
   };
 
-  // Handle task drag and drop
   window.handleTaskMove = async function(taskId, boardId, position) {
     try {
       const response = await fetch(`/workspaces/${workspaceId}/kanban/tasks/${taskId}/move`, {
@@ -639,34 +596,19 @@
 
       const result = await response.json();
 
-      if (response.ok && result.success) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Success!',
-          text: 'Task moved successfully',
-          timer: 1500,
-          showConfirmButton: false
-        });
-      } else {
-        throw new Error(result.message || 'Failed to move task');
+      // Do not show success messages for move operations to avoid noisy UX.
+      if (!response.ok || !result.success) {
+        // Log and reload after a short delay to revert inconsistent state
+        console.error('Move task failed:', result.message || 'Unknown error');
+        setTimeout(() => location.reload(), 700);
       }
     } catch (error) {
       console.error('Error moving task:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error!',
-        text: error.message || 'Failed to move task',
-        customClass: {
-          confirmButton: 'btn btn-primary'
-        },
-        buttonsStyling: false
-      });
-      // Reload to revert changes
-      setTimeout(() => location.reload(), 1500);
+      // On network or unexpected error, reload to keep UI consistent
+      setTimeout(() => location.reload(), 700);
     }
   };
 
-  // Add new board
   window.addBoard = async function(title) {
     try {
       const response = await fetch(`/workspaces/${workspaceId}/kanban/boards`, {
@@ -712,11 +654,17 @@
     }
   };
 
-  // Add comment to task
   window.addComment = async function(comment) {
     if (!currentTaskId || !comment) return;
 
+    // Send comment and optimistically update UI
     try {
+      const postBtn = document.getElementById('post-comment-btn');
+      if (postBtn) {
+        postBtn.disabled = true;
+        postBtn.innerHTML = 'Posting...';
+      }
+
       const response = await fetch(`/workspaces/${workspaceId}/kanban/tasks/${currentTaskId}/comment`, {
         method: 'POST',
         headers: {
@@ -727,58 +675,124 @@
         body: JSON.stringify({ comment })
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to add comment');
-      }
-
       const result = await response.json();
-      
-      if (result.success) {
-        showToast('Comment added successfully', 'success');
+
+      if (response.ok && result.success) {
+        // Clear editor if Quill present
+        if (typeof Quill !== 'undefined') {
+          const editorEl = document.querySelector('#comment-editor');
+          const quill = Quill.find ? Quill.find(editorEl) : null;
+          if (quill) quill.setContents([]);
+        }
+
+        // Switch to Activity tab and refresh activities so the new comment appears there
+        const activityTabBtn = document.querySelector('[data-bs-target="#tab-activity"]');
+        if (activityTabBtn) {
+          try {
+            new bootstrap.Tab(activityTabBtn).show();
+          } catch (e) {
+            // fallback: click
+            activityTabBtn.click();
+          }
+        }
+
         loadTaskActivities(currentTaskId);
+      } else {
+        throw new Error(result.message || 'Failed to add comment');
       }
     } catch (error) {
       console.error('Error adding comment:', error);
-      showToast('Failed to add comment', 'error');
+      if (typeof Swal !== 'undefined') {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: error.message || 'Failed to add comment',
+          customClass: { confirmButton: 'btn btn-primary' },
+          buttonsStyling: false
+        });
+      }
+    } finally {
+      const postBtn = document.getElementById('post-comment-btn');
+      if (postBtn) {
+        postBtn.disabled = false;
+        postBtn.innerHTML = 'Post';
+      }
     }
   };
 
-  // Upload attachment
   window.uploadAttachment = async function(file) {
     if (!currentTaskId || !file) return;
 
-    const formData = new FormData();
-    formData.append('file', file);
+    const progressContainer = document.getElementById('upload-progress');
+    const progressBar = document.getElementById('upload-progress-bar');
+    if (progressContainer) progressContainer.style.display = 'block';
+    if (progressBar) progressBar.style.width = '0%';
 
     try {
-      const response = await fetch(`/workspaces/${workspaceId}/kanban/tasks/${currentTaskId}/attach`, {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        },
-        body: formData
+      await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `/workspaces/${workspaceId}/kanban/tasks/${currentTaskId}/attach`);
+        xhr.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-token"]').content);
+        xhr.responseType = 'json';
+
+        xhr.upload.onprogress = function(e) {
+          if (e.lengthComputable && progressBar) {
+            const percent = Math.round((e.loaded / e.total) * 100);
+            progressBar.style.width = percent + '%';
+          }
+        };
+
+        xhr.onload = function() {
+          if (xhr.status >= 200 && xhr.status < 300 && xhr.response && xhr.response.success) {
+            resolve(xhr.response);
+          } else {
+            reject(new Error((xhr.response && xhr.response.message) || 'Failed to upload file'));
+          }
+        };
+
+        xhr.onerror = function() {
+          reject(new Error('Network error while uploading file'));
+        };
+
+        const fd = new FormData();
+        fd.append('file', file);
+        xhr.send(fd);
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to upload attachment');
-      }
-
-      const result = await response.json();
-      
-      if (result.success) {
-        showToast('File uploaded successfully', 'success');
-        loadTaskDetails(currentTaskId);
-      }
+      // Refresh attachments
+      loadTaskDetails(currentTaskId);
     } catch (error) {
       console.error('Error uploading file:', error);
-      showToast('Failed to upload file', 'error');
+      if (typeof Swal !== 'undefined') {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: error.message || 'Failed to upload file',
+          customClass: { confirmButton: 'btn btn-primary' },
+          buttonsStyling: false
+        });
+      }
+    } finally {
+      if (progressContainer) progressContainer.style.display = 'none';
+      if (progressBar) progressBar.style.width = '0%';
     }
   };
 
-  // Delete attachment
   window.deleteAttachment = async function(attachmentId) {
-    if (!confirm('Are you sure you want to delete this attachment?')) return;
+    if (!attachmentId) return;
+
+    const confirmResult = await Swal.fire({
+      icon: 'warning',
+      title: 'Are you sure?',
+      text: 'This will permanently remove the attachment.',
+      showCancelButton: true,
+      confirmButtonText: 'Delete',
+      cancelButtonText: 'Cancel',
+      customClass: { confirmButton: 'btn btn-danger me-2', cancelButton: 'btn btn-label-secondary' },
+      buttonsStyling: false
+    });
+
+    if (!confirmResult.isConfirmed) return;
 
     try {
       const response = await fetch(`/workspaces/${workspaceId}/kanban/attachments/${attachmentId}`, {
@@ -789,26 +803,30 @@
         }
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to delete attachment');
-      }
-
       const result = await response.json();
-      
-      if (result.success) {
-        showToast('Attachment deleted successfully', 'success');
+
+      if (response.ok && result.success) {
+        // Refresh attachments
         loadTaskDetails(currentTaskId);
+      } else {
+        throw new Error(result.message || 'Failed to delete attachment');
       }
     } catch (error) {
       console.error('Error deleting attachment:', error);
-      showToast('Failed to delete attachment', 'error');
+      if (typeof Swal !== 'undefined') {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: error.message || 'Failed to delete attachment',
+          customClass: { confirmButton: 'btn btn-primary' },
+          buttonsStyling: false
+        });
+      }
     }
   };
 
-  // Expose to global kanbanManager
   window.kanbanManager.deleteAttachment = window.deleteAttachment;
 
-  // Toast notification helper
   function showToast(message, type = 'success') {
     if (typeof Swal !== 'undefined') {
       Swal.fire({
@@ -825,10 +843,9 @@
     }
   }
 
-  // Event listeners
   document.addEventListener('DOMContentLoaded', function() {
     // Primary button click (create or update based on mode)
-    const updateBtn = document.querySelector('.kanban-update-item-sidebar .btn-primary');
+    const updateBtn = document.getElementById('update-task-btn');
     if (updateBtn) {
       updateBtn.addEventListener('click', function(e) {
         e.preventDefault();
@@ -842,7 +859,7 @@
     }
 
     // Delete button click
-    const deleteBtn = document.querySelector('.kanban-update-item-sidebar .btn-label-danger');
+    const deleteBtn = document.getElementById('delete-task-btn');
     if (deleteBtn) {
       deleteBtn.addEventListener('click', function(e) {
         e.preventDefault();
@@ -863,9 +880,33 @@
       });
     }
 
+    // Post comment button
+    const postBtn = document.getElementById('post-comment-btn');
+    if (postBtn) {
+      postBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        // Get comment content from Quill if available
+        let comment = '';
+        if (typeof Quill !== 'undefined') {
+          const editorEl = document.querySelector('#comment-editor');
+          const quill = Quill.find ? Quill.find(editorEl) : null;
+          if (quill) {
+            comment = quill.root.innerHTML.trim();
+            if (quill.getText().trim().length === 0) return; // don't post empty
+          }
+        }
+
+        if (comment) addComment(comment);
+      });
+    }
+
     // Hook into jKanban drag events
     // Wait for jKanban to initialize
     setTimeout(function() {
+      const MOVE_DEBOUNCE_MS = 600; // delay to wait for moves to settle
+      const pendingMoves = new Map(); // taskId -> { boardId, position, timeoutId }
+      const lastSentMove = new Map(); // taskId -> 'boardId:position'
+
       const kanbanBoards = document.querySelectorAll('.kanban-board');
       kanbanBoards.forEach(board => {
         const boardElement = board.querySelector('.kanban-drag');
@@ -880,10 +921,28 @@
                     const boardId = board.getAttribute('data-id');
                     const items = board.querySelectorAll('.kanban-item');
                     const position = Array.from(items).indexOf(node);
-                    
-                    if (taskId && boardId) {
-                      handleTaskMove(taskId, boardId, position);
+
+                    if (!taskId || !boardId) return;
+
+                    const moveKey = `${boardId}:${position}`;
+                    // If we've already sent this exact move, ignore
+                    if (lastSentMove.get(taskId) === moveKey) return;
+
+                    // If there's an existing pending move for this task, clear it
+                    const existing = pendingMoves.get(taskId);
+                    if (existing && existing.timeoutId) {
+                      clearTimeout(existing.timeoutId);
                     }
+
+                    // Schedule a debounced move
+                    const timeoutId = setTimeout(() => {
+                      // Execute the move and record as last sent
+                      handleTaskMove(taskId, boardId, position);
+                      lastSentMove.set(taskId, moveKey);
+                      pendingMoves.delete(taskId);
+                    }, MOVE_DEBOUNCE_MS);
+
+                    pendingMoves.set(taskId, { boardId, position, timeoutId });
                   }
                 });
               }

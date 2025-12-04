@@ -1,3 +1,8 @@
+@php
+    use App\Enums\TaskPriority;
+    use App\Enums\TaskLabel;
+@endphp
+
 <div class="offcanvas offcanvas-end kanban-update-item-sidebar" tabindex="-1" id="kanban-update-item-sidebar">
     <div class="offcanvas-header border-bottom">
         <h5 class="offcanvas-title">Task Details</h5>
@@ -38,24 +43,18 @@
                         <div class="col-md-6">
                             <label class="form-label fw-medium" for="priority">Priority</label>
                             <select class="select2 form-select" id="priority">
-                                <option value="low">Low</option>
-                                <option value="medium" selected>Medium</option>
-                                <option value="high">High</option>
-                                <option value="urgent">Urgent</option>
+                                @foreach(TaskPriority::options() as $opt)
+                                    <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-medium" for="label">Label</label>
                             <select class="select2 form-select" id="label">
                                 <option value="">-- Select Label --</option>
-                                <option value="ux">UX</option>
-                                <option value="images">Images</option>
-                                <option value="info">Info</option>
-                                <option value="code_review">Code Review</option>
-                                <option value="app">App</option>
-                                <option value="charts_maps">Charts & Maps</option>
-                                <option value="feature">Feature</option>
-                                <option value="bug">Bug</option>
+                                @foreach(TaskLabel::options() as $opt)
+                                    <option value="{{ $opt['value'] }}">{{ $opt['label'] }}</option>
+                                @endforeach
                             </select>
                         </div>
                     </div>
@@ -84,33 +83,43 @@
                         <div id="attachments-list" class="mb-3">
                             <small class="text-muted">No attachments</small>
                         </div>
-                        <input type="file" class="form-control" id="attachments" />
+                        <input type="file" class="form-control" id="attachments" accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
                     </div>
 
                     <div class="mb-4">
-                        <label class="form-label fw-medium d-block">Comments <span id="comments-count" class="badge bg-label-secondary ms-1">0</span></label>
-                        <div id="comments-list" class="mb-3" style="max-height: 300px; overflow-y: auto;">
-                            <small class="text-muted">No comments yet</small>
-                        </div>
-                        <div class="comment-editor border-bottom-0"></div>
-                        <div class="d-flex justify-content-end">
-                            <div class="comment-toolbar">
-                                <span class="ql-formats me-0">
-                                    <button class="ql-bold"></button>
-                                    <button class="ql-italic"></button>
-                                    <button class="ql-underline"></button>
-                                    <button class="ql-link"></button>
-                                    <button class="ql-image"></button>
-                                </span>
+                        <label class="form-label fw-medium d-block">Add Comment</label>
+
+                        <div class="comment-editor border-bottom-0" id="comment-editor"></div>
+
+                        <div class="d-flex align-items-center justify-content-between mt-2">
+                            <div id="upload-progress" class="flex-grow-1 me-3" style="display:none;">
+                                <div class="progress">
+                                    <div id="upload-progress-bar" class="progress-bar" role="progressbar" style="width:0%"></div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="comment-toolbar">
+                                    <span class="ql-formats me-0">
+                                        <button class="ql-bold"></button>
+                                        <button class="ql-italic"></button>
+                                        <button class="ql-underline"></button>
+                                        <button class="ql-link"></button>
+                                        <button class="ql-image"></button>
+                                    </span>
+                                </div>
+                                <button type="button" class="btn btn-primary btn-sm" id="post-comment-btn">
+                                    Post Comment
+                                </button>
                             </div>
                         </div>
                     </div>
 
                     <div class="d-flex flex-wrap gap-2 pt-3 border-top">
-                        <button type="button" class="btn btn-primary">
+                        <button type="button" id="update-task-btn" class="btn btn-primary">
                             <i class="ti ti-device-floppy me-1"></i> Update Task
                         </button>
-                        <button type="button" class="btn btn-label-danger">
+                        <button type="button" id="delete-task-btn" class="btn btn-label-danger">
                             <i class="ti ti-trash me-1"></i> Delete Task
                         </button>
                     </div>

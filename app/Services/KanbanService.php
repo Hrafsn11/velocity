@@ -185,14 +185,15 @@ class KanbanService
             'comment' => $comment,
         ]);
 
-        $this->activityService->logCommented($task);
+        // Log comment with content so activity can show the comment text
+        $this->activityService->logCommented($task, $comment);
     }
 
     public function attachFile(KanbanTask $task, $file): void
     {
         $path = $file->store('kanban-attachments', 'public');
 
-        $task->attachments()->create([
+        $attachment = $task->attachments()->create([
             'uploaded_by' => auth()->id(),
             'file_name' => $file->getClientOriginalName(),
             'file_path' => $path,
@@ -200,7 +201,8 @@ class KanbanService
             'file_size' => $file->getSize(),
         ]);
 
-        $this->activityService->logAttachmentAdded($task, $file->getClientOriginalName());
+        // Log attachment with file path so frontend can render a link
+        $this->activityService->logAttachmentAdded($task, $file->getClientOriginalName(), $path);
     }
 
     public function deleteAttachment(string $attachmentId): void

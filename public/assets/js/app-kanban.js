@@ -106,16 +106,16 @@
   // Render header
   function renderHeader(color, text) {
     return (
-      "<div class='d-flex justify-content-between flex-wrap align-items-center mb-2'>" +
+      "<div class='d-flex justify-content-between flex-wrap align-items-center mb-3'>" +
       "<div class='item-badges'> " +
       "<div class='badge bg-label-" +
       color +
       "'> " +
       text +
-      '</div>' +
-      '</div>' +
+      "</div>" +
+      "</div>" +
       renderDropdown() +
-      '</div>'
+      "</div>"
     );
   }
 

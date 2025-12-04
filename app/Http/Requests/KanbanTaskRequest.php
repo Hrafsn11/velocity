@@ -3,6 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use App\Enums\TaskLabel;
+use App\Enums\TaskPriority;
 
 class KanbanTaskRequest extends FormRequest
 {
@@ -23,8 +26,14 @@ class KanbanTaskRequest extends FormRequest
             ],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'priority' => ['nullable', 'in:low,medium,high,urgent'],
-            'label' => ['nullable', 'in:ux,images,info,code_review,app,charts_maps,feature,bug'],
+            'priority' => [
+                'nullable',
+                Rule::in(array_column(TaskPriority::options(), 'value'))
+            ],
+            'label' => [
+                'nullable',
+                Rule::in(array_column(TaskLabel::options(), 'value'))
+            ],
             'due_date' => ['nullable', 'date', 'after_or_equal:today'],
             'position' => ['nullable', 'integer', 'min:0'],
             'assignees' => ['nullable', 'array'],

@@ -49,14 +49,26 @@ class KanbanActivityService
         $this->log($task, 'unassigned', "Unassigned from {$assigneeName}");
     }
 
-    public function logCommented(KanbanTask $task): void
+    public function logCommented(KanbanTask $task, ?string $comment = null): void
     {
-        $this->log($task, 'commented', 'Added a comment');
+        $this->log(
+            $task,
+            'commented',
+            'Added a comment',
+            null,
+            ['comment' => $comment]
+        );
     }
 
-    public function logAttachmentAdded(KanbanTask $task, string $fileName): void
+    public function logAttachmentAdded(KanbanTask $task, string $fileName, ?string $filePath = null): void
     {
-        $this->log($task, 'attached', "Attached file: {$fileName}");
+        $this->log(
+            $task,
+            'attached',
+            "Attached file: {$fileName}",
+            null,
+            ['attachment' => ['file_name' => $fileName, 'file_path' => $filePath]]
+        );
     }
 
     public function logAttachmentDeleted(KanbanTask $task, string $fileName): void
@@ -153,6 +165,8 @@ class KanbanActivityService
                     ],
                     'time' => $activity->created_at->diffForHumans(),
                     'timestamp' => $activity->created_at->format('Y-m-d H:i:s'),
+                    'comment' => $activity->new_value['comment'] ?? null,
+                    'attachment' => $activity->new_value['attachment'] ?? null,
                 ];
             });
     }
