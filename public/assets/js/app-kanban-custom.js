@@ -162,25 +162,44 @@
   }
 
   function transformTaskData(task) {
-    const assignedImages = task.assignees.map(a => {
-      // Extract filename from avatar URL or use default
-      const avatar = a.avatar || 'default-avatar.png';
-      return avatar.split('/').pop();
-    }).join(',');
+    const assignees = Array.isArray(task.assignees) ? task.assignees : [];
+    
+    // Filter out invalid/empty assignees
+    const validAssignees = assignees.filter(a => a && (a.name || a.avatar));
 
-    const assignedNames = task.assignees.map(a => a.name).join(',');
+    // Build a comma separated list of avatar filenames (or last path segments)
+    const assignedList = validAssignees
+      .map(a => {
+        if (!a || !a.avatar) return '';
+        try {
+          const parts = a.avatar.split('/');
+          return parts[parts.length - 1];
+        } catch (e) {
+          return a.avatar;
+        }
+      })
+      .filter(Boolean)
+      .join(',');
 
+    const attachmentsCount = task.attachments_count || 0;
+    const commentsCount = task.comments_count || 0;
+
+    // Return plain title (text) and data-like properties so Vuexy's post-render will
+    // create the same structure (header/footer) as the template does.
     return {
       id: task.id,
-      title: `<span class="kanban-text">${task.title}</span>`,
+      title: task.title || '',
       eid: task.id,
       badge: task.label || '',
       'badge-text': task.label || '',
       'due-date': task.due_date || '',
-      assigned: undefined, // Hidden - undefined prevents avatar rendering
-      members: assignedNames,
-      attachments: task.attachments_count || 0,
-      comments: task.comments_count || 0,
+      // Vuexy's renderer looks for these attributes on the element
+      assigned: assignedList || undefined,
+      // include full assignees data so post-render can build initials or real avatars
+      assignees: validAssignees.length > 0 ? JSON.stringify(validAssignees) : undefined,
+      members: validAssignees.map(a => a.name).join(',') || undefined,
+      attachments: attachmentsCount,
+      comments: commentsCount,
       priority: task.priority || 'medium',
       issues: task.active_issues_count || 0
     };
@@ -955,6 +974,115 @@
           });
         }
       });
+
+      // Post-render: inject avatar stacks into each kanban item footer
+      try {
+        const items = document.querySelectorAll('.kanban-item');
+        items.forEach(el => {
+          // Ensure header badge is in the header (Vuexy pattern)
+          try {
+            const hasBadge = el.querySelector('.item-badges');
+            const badgeColor = el.getAttribute('data-badge');
+            const badgeText = el.getAttribute('data-badge-text');
+            if (!hasBadge && (badgeColor || badgeText)) {
+              const headerHtml = `\n                <div class="d-flex justify-content-between flex-wrap align-items-center mb-3">\n                  <div class="item-badges">\n                    <div class="badge bg-label-${badgeColor || 'secondary'}"> ${badgeText || ''}</div>\n                  </div>\n                  <div class="dropdown">\n                    <i class="dropdown-toggle ti ti-dots-vertical cursor-pointer" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></i>\n                    <div class="dropdown-menu dropdown-menu-end">\n                      <a class="dropdown-item delete-board" href="javascript:void(0)"> <i class="ti ti-trash ti-xs me-1"></i> <span class="align-middle">Delete</span></a>\n                      <a class="dropdown-item" href="javascript:void(0)"><i class="ti ti-edit ti-xs me-1"></i> <span class="align-middle">Rename</span></a>\n                      <a class="dropdown-item" href="javascript:void(0)"><i class="ti ti-archive ti-xs me-1"></i> <span class="align-middle">Archive</span></a>\n                    </div>\n                  </div>\n                </div>\n              `;
+              el.insertAdjacentHTML('afterbegin', headerHtml);
+            }
+          } catch (e) {
+            // ignore header insert errors
+          }
+
+          // Build avatar stack from detailed assignees JSON if available, otherwise fallback
+          let assignees = [];
+          const assigneesJson = el.getAttribute('data-assignees');
+          if (assigneesJson) {
+            try {
+              assignees = JSON.parse(assigneesJson);
+            } catch (err) {
+              assignees = [];
+            }
+          }
+
+          // Fallback: try to build from data-assigned and data-members
+          if ((!assignees || assignees.length === 0) && el.getAttribute('data-assigned')) {
+            const assigned = el.getAttribute('data-assigned');
+            const members = el.getAttribute('data-members') || '';
+            const files = assigned.split(',').map(s => s.trim()).filter(Boolean);
+            const names = members.split(',').map(s => s.trim());
+            assignees = files.map((f, i) => ({ avatar: f, name: names[i] || '' }));
+          }
+
+          // Only show avatars if there are VALID assignees with name or avatar
+          const validAssignees = assignees.filter(a => a && (a.name || a.avatar));
+          if (!validAssignees || validAssignees.length === 0) {
+            // No valid assignees - do not render any avatars
+            return;
+          }
+
+          // Use only valid assignees for rendering
+          assignees = validAssignees;
+
+          const avatarHtml = assignees
+            .slice(0, 4)
+            .map((a, idx) => {
+              const name = (a.name || '').trim();
+              // determine avatar src or initials
+              if (a.avatar) {
+                const avatarPath = String(a.avatar || '').trim();
+                const isFull = avatarPath.startsWith('/') || avatarPath.startsWith('http');
+                const src = isFull ? avatarPath : assetsPath + 'img/avatars/' + avatarPath;
+                return `\n              <div class="avatar avatar-xs ${idx !== 0 ? 'ms-1' : ''}" data-bs-toggle="tooltip" data-bs-placement="top" title="${name}">\n                <img src="${src}" alt="${name}" class="rounded-circle">\n              </div>`;
+              }
+
+              // no image: render initials
+              const initials = (name || '')
+                .split(' ')
+                .filter(Boolean)
+                .slice(0, 2)
+                .map(n => n.charAt(0).toUpperCase())
+                .join('') || '?';
+              return `\n              <div class="avatar avatar-xs ${idx !== 0 ? 'ms-1' : ''}" data-bs-toggle="tooltip" data-bs-placement="top" title="${name}">\n                <span class="avatar-initial rounded-circle bg-label-secondary" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;font-size:11px;">${initials}</span>\n              </div>`;
+            })
+            .join('');
+
+          // find the footer wrapper created by renderFooter
+          const attachmentsSpan = el.querySelector('.attachments');
+          if (!attachmentsSpan) return;
+
+          // walk up to find the footer root (the element with justify-content-between)
+          let footerRoot = attachmentsSpan.parentElement;
+          while (footerRoot && !footerRoot.classList.contains('justify-content-between')) {
+            footerRoot = footerRoot.parentElement;
+          }
+          if (!footerRoot) return;
+
+          // create or reuse right-side container for avatars
+          let rightContainer = footerRoot.querySelector('.kanban-avatar-stack-right');
+          if (!rightContainer) {
+            rightContainer = document.createElement('div');
+            rightContainer.className = 'd-flex align-items-center kanban-avatar-stack-right';
+            footerRoot.appendChild(rightContainer);
+          }
+
+          // Add overflow +N indicator if more than 4
+          rightContainer.innerHTML = avatarHtml;
+          if (assignees.length > 4) {
+            const more = document.createElement('div');
+            more.className = 'avatar avatar-xs ms-1';
+            more.innerHTML = `<span class="avatar-initial rounded-circle bg-label-primary" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;font-size:11px;">+${assignees.length - 4}</span>`;
+            rightContainer.appendChild(more);
+          }
+          // Initialize tooltips for avatars we just added
+          try {
+            const tt = [].slice.call(rightContainer.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tt.forEach(function (t) { new bootstrap.Tooltip(t); });
+          } catch (e) {
+            // ignore tooltip init errors
+          }
+        });
+      } catch (e) {
+        console.error('Error injecting avatar stacks into kanban items', e);
+      }
     }, 1000);
   });
 
