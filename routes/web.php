@@ -99,23 +99,72 @@ Route::middleware(['auth', 'verified', 'check.account.status'])->group(function 
     });
 
 
-        // Risk Management Routes (for testing - hardcoded data)
+    // Risk Management Routes
     Route::prefix('risk')->name('risk.')->group(function () {
-        Route::get('/dashboard', function () {
-            return view('risk.dashboard');
-        })->name('dashboard');
+        // Test endpoint for debugging
+        Route::get('/test', function () {
+            return response()->json(['message' => 'Risk routes work!', 'timestamp' => now()]);
+        });
         
-        Route::get('/', function () {
-            return view('risk.index');
-        })->name('index');
+        // Debug: Check tasks and issues
+        Route::get('/debug', function () {
+            $tasks = \App\Models\KanbanTask::select('task_id', 'title', 'workspace_id')
+                ->with(['issues' => function($q) {
+                    $q->select('issue_id', 'code', 'title', 'linked_task_id', 'status');
+                }])
+                ->limit(5)
+                ->get();
+            
+            $issues = \App\Models\Issue::select('issue_id', 'code', 'title', 'linked_task_id', 'status')
+                ->get();
+            
+            return response()->json([
+                'tasks_count' => \App\Models\KanbanTask::count(),
+                'issues_count' => \App\Models\Issue::count(),
+                'issues_with_task' => \App\Models\Issue::whereNotNull('linked_task_id')->count(),
+                'tasks' => $tasks,
+                'issues' => $issues
+            ]);
+        });
         
-        Route::get('/issues', function () {
-            return view('risk.issues');
-        })->name('issues');
+        // Dashboard
+        Route::get('/dashboard', [App\Http\Controllers\RiskController::class, 'dashboard'])->name('dashboard');
         
-        Route::get('/change-requests', function () {
-            return view('risk.change-requests');
-        })->name('change-requests');
+        // Risks
+        Route::get('/', [App\Http\Controllers\RiskController::class, 'index'])->name('index');
+        Route::post('/', [App\Http\Controllers\RiskController::class, 'store'])->name('store');
+        Route::put('/{risk}', [App\Http\Controllers\RiskController::class, 'update'])->name('update');
+        Route::delete('/{risk}', [App\Http\Controllers\RiskController::class, 'destroy'])->name('destroy');
+        Route::post('/{risk}/mark-mitigated', [App\Http\Controllers\RiskController::class, 'markMitigated'])->name('mark-mitigated');
+        Route::post('/{risk}/convert-to-issue', [App\Http\Controllers\RiskController::class, 'convertToIssue'])->name('convert-to-issue');
+        
+        // Issues
+        Route::get('/issues', [App\Http\Controllers\IssueController::class, 'index'])->name('issues');
+        
+        // Test issue endpoint without model binding
+        Route::get('/issues/test/{id}', function ($id) {
+            $issue = \App\Models\Issue::where('issue_id', $id)->first();
+            if (!$issue) {
+                return response()->json(['error' => 'Issue not found', 'id' => $id], 404);
+            }
+            return response()->json(['success' => true, 'data' => $issue->load(['workspace', 'assignee.user', 'creator'])]);
+        });
+        
+        Route::get('/issues/{issue}', [App\Http\Controllers\IssueController::class, 'show'])->name('issues.show');
+        Route::post('/issues', [App\Http\Controllers\IssueController::class, 'store'])->name('issues.store');
+        Route::put('/issues/{issue}', [App\Http\Controllers\IssueController::class, 'update'])->name('issues.update');
+        Route::delete('/issues/{issue}', [App\Http\Controllers\IssueController::class, 'destroy'])->name('issues.destroy');
+        Route::post('/issues/{issue}/status', [App\Http\Controllers\IssueController::class, 'updateStatus'])->name('issues.status');
+        Route::post('/issues/{issue}/comment', [App\Http\Controllers\IssueController::class, 'addComment'])->name('issues.comment');
+        Route::post('/issues/{issue}/resolve', [App\Http\Controllers\IssueController::class, 'resolve'])->name('issues.resolve');
+        
+        // Change Requests
+        Route::get('/change-requests', [App\Http\Controllers\ChangeRequestController::class, 'index'])->name('change-requests');
+        Route::post('/change-requests', [App\Http\Controllers\ChangeRequestController::class, 'store'])->name('change-requests.store');
+        Route::post('/change-requests/{changeRequest}/approve', [App\Http\Controllers\ChangeRequestController::class, 'approve'])->name('change-requests.approve');
+        Route::post('/change-requests/{changeRequest}/reject', [App\Http\Controllers\ChangeRequestController::class, 'reject'])->name('change-requests.reject');
+        Route::post('/change-requests/{changeRequest}/implement', [App\Http\Controllers\ChangeRequestController::class, 'implement'])->name('change-requests.implement');
+        Route::delete('/change-requests/{changeRequest}', [App\Http\Controllers\ChangeRequestController::class, 'destroy'])->name('change-requests.destroy');
     });
     
 });

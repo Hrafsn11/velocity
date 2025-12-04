@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Workspace extends Model
 {
@@ -50,6 +51,26 @@ class Workspace extends Model
     {
         return $this->belongsToMany(EmployeeProfile::class, 'workspace_members', 'workspace_id', 'employee_id')
             ->withTimestamps();
+    }
+
+    public function risks(): HasMany
+    {
+        return $this->hasMany(Risk::class, 'workspace_id', 'workspace_id');
+    }
+
+    public function issues(): HasMany
+    {
+        return $this->hasMany(Issue::class, 'workspace_id', 'workspace_id');
+    }
+
+    public function changeRequests(): HasMany
+    {
+        return $this->hasMany(ChangeRequest::class, 'workspace_id', 'workspace_id');
+    }
+
+    public function kanbanTasks(): HasMany
+    {
+        return $this->hasMany(KanbanTask::class, 'workspace_id', 'workspace_id');
     }
 }
 
