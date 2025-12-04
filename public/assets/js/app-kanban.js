@@ -156,12 +156,19 @@
   }
 
   // Render footer
-  function renderFooter(attachments, comments, assigned, members) {
+  function renderFooter(attachments, comments, assigned, members, issueCount) {
     // Ensure attachments and comments show 0 instead of null
     const attachmentsCount = attachments || 0;
     const commentsCount = comments || 0;
+    const activeIssuesCount = issueCount || 0;
+    
+    // Issue badge HTML (only show if has issues) - render BEFORE footer
+    const issueBadge = activeIssuesCount > 0 
+      ? "<div class='mb-2'><span class='badge bg-danger'><i class='ti ti-alert-triangle ti-xs me-1'></i>ISSUE (" + activeIssuesCount + ")</span></div>"
+      : '';
     
     return (
+      issueBadge +
       "<div class='d-flex justify-content-between align-items-center flex-wrap mt-2'>" +
       "<div class='d-flex'> <span class='d-flex align-items-center me-2'><i class='ti ti-paperclip me-1'></i>" +
       "<span class='attachments'>" +
@@ -172,9 +179,6 @@
       commentsCount +
       ' </span>' +
       '</span></div>' +
-      "<div class='avatar-group d-flex align-items-center assigned-avatar'>" +
-      renderAvatar(assigned, true, 'xs', null, members) +
-      '</div>' +
       '</div>'
     );
   }
@@ -351,7 +355,8 @@
             el.getAttribute('data-attachments'),
             el.getAttribute('data-comments'),
             el.getAttribute('data-assigned'),
-            el.getAttribute('data-members')
+            el.getAttribute('data-members'),
+            el.getAttribute('data-issues')
           )
         );
       }

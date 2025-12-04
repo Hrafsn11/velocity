@@ -105,4 +105,19 @@ class KanbanTask extends Model
     {
         return $this->due_date && $this->due_date->isPast();
     }
+
+    public function issues(): HasMany
+    {
+        return $this->hasMany(Issue::class, 'linked_task_id', 'task_id');
+    }
+
+    public function hasActiveIssues(): bool
+    {
+        return $this->issues()->whereNotIn('status', ['resolved', 'closed'])->exists();
+    }
+
+    public function activeIssuesCount(): int
+    {
+        return $this->issues()->whereNotIn('status', ['resolved', 'closed'])->count();
+    }
 }

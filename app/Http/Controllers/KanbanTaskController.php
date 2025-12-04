@@ -33,6 +33,10 @@ class KanbanTaskController extends Controller
             'comments.user',
         ]);
 
+        // Add issue count
+        $task->active_issues_count = $task->activeIssuesCount();
+        $task->has_active_issues = $task->hasActiveIssues();
+
         return response()->json([
             'success' => true,
             'data' => $task,
