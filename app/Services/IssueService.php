@@ -3,19 +3,42 @@
 namespace App\Services;
 
 use App\Models\Issue;
+use App\Models\IssueComment;
+use App\Models\IssueAttachment;
 use App\Models\KanbanTask;
 use App\Models\RiskActivity;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
+/**
+ * Issue Service
+ * 
+ * Handles all business logic related to issue management including creation,
+ * updating, commenting, resolution, and activity logging.
+ * 
+ * @package App\Services
+ */
 class IssueService
 {
+    /**
+     * Create a new Issue Service instance
+     * 
+     * @param KanbanActivityService $activityService Service for logging activities to linked tasks
+     */
     public function __construct(
         private readonly KanbanActivityService $activityService
     ) {
     }
+    
     /**
-     * Generate unique code for issue per workspace
+     * Generate unique sequential code for issue within a workspace
+     * 
+     * Format: ISS001, ISS002, ISS003, etc.
+     * 
+     * @param string $workspaceId The workspace ID to generate code for
+     * @return string Generated issue code
      */
     public function generateCode(string $workspaceId): string
     {
@@ -32,13 +55,23 @@ class IssueService
     }
 
     /**
-     * Create new issue
+     * Create a new issue with automatic code generation
+     * 
+     * This method handles the complete issue creation process including:
+     * - Generating unique issue code
+     * - Setting the creator
+     * - Logging the creation activity
+     * - Notifying linked task (if any)
+     * 
+     * @param array $data Issue data including workspace_id, title, description, priority, etc.
+     * @return Issue The created issue with loaded relationships
+     * @throws \Exception If transaction fails
      */
     public function createIssue(array $data): Issue
     {
         return DB::transaction(function () use ($data) {
             $data['code'] = $this->generateCode($data['workspace_id']);
-            $data['created_by'] = auth()->id();
+            $data['created_by'] = Auth::id();
 
             $issue = Issue::create($data);
 
@@ -57,7 +90,15 @@ class IssueService
     }
 
     /**
-     * Update issue
+     * Update an existing issue and log changes
+     * 
+     * Automatically logs all changes made to tracked fields.
+     * If status changes and issue is linked to a task, logs activity to the task as well.
+     * 
+     * @param Issue $issue The issue to update
+     * @param array $data Updated issue data
+     * @return Issue The updated issue with fresh relationships
+     * @throws \Exception If transaction fails
      */
     public function updateIssue(Issue $issue, array $data): Issue
     {
@@ -96,7 +137,14 @@ class IssueService
     }
 
     /**
-     * Get issues by workspace with filters
+     * Get all issues for a specific workspace with optional filters
+     * 
+     * Supports filtering by status, priority, and assignee.
+     * Always eager loads workspace, risk, assignee, and creator relationships.
+     * 
+     * @param string $workspaceId The workspace ID to fetch issues for
+     * @param array $filters Optional filters ['status' => '...', 'priority' => int, 'assignee_id' => '...']
+     * @return Collection Collection of Issue models with relationships
      */
     public function getIssuesByWorkspace(string $workspaceId, array $filters = []): Collection
     {
@@ -119,7 +167,14 @@ class IssueService
     }
 
     /**
-     * Detect changes
+     * Detect changes between current issue data and new data
+     * 
+     * Tracks changes to: title, priority, severity, status, assignee_id, and deadline
+     * Returns an array of changes in format ['field' => ['from' => old, 'to' => new]]
+     * 
+     * @param Issue $issue The current issue model
+     * @param array $newData The new data being applied
+     * @return array Array of changes detected
      */
     protected function detectChanges(Issue $issue, array $newData): array
     {
@@ -139,14 +194,23 @@ class IssueService
     }
 
     /**
-     * Add comment to issue
+     * Add a comment to an issue
+     * 
+     * Creates a comment record and optionally attaches images.
+     * Logs the comment activity for audit trail.
+     * 
+     * @param Issue $issue The issue to add comment to
+     * @param string $comment The comment text
+     * @param array $images Array of uploaded image files
+     * @return IssueComment The created comment model
+     * @throws \Exception If transaction fails
      */
-    public function addComment(Issue $issue, string $comment, array $images = []): \App\Models\IssueComment
+    public function addComment(Issue $issue, string $comment, array $images = []): IssueComment
     {
         return DB::transaction(function () use ($issue, $comment, $images) {
-            $issueComment = \App\Models\IssueComment::create([
+            $issueComment = IssueComment::create([
                 'issue_id' => $issue->issue_id,
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'comment' => $comment,
                 'is_resolution' => false,
             ]);
@@ -165,15 +229,28 @@ class IssueService
     }
 
     /**
-     * Resolve issue with comment
+     * Resolve an issue with resolution comment
+     * 
+     * This method:
+     * - Creates a resolution comment (marked as is_resolution = true)
+     * - Optionally attaches images to the resolution comment
+     * - Updates issue status to 'resolved'
+     * - Records resolution timestamp and resolver user
+     * - Logs activity for both issue and linked task (if any)
+     * 
+     * @param Issue $issue The issue to resolve
+     * @param string $resolutionComment The resolution explanation
+     * @param array $images Array of uploaded image files
+     * @return Issue The resolved issue with fresh relationships
+     * @throws \Exception If transaction fails
      */
     public function resolveIssue(Issue $issue, string $resolutionComment, array $images = []): Issue
     {
         return DB::transaction(function () use ($issue, $resolutionComment, $images) {
             // Create resolution comment
-            $comment = \App\Models\IssueComment::create([
+            $comment = IssueComment::create([
                 'issue_id' => $issue->issue_id,
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'comment' => $resolutionComment,
                 'is_resolution' => true,
             ]);
@@ -189,7 +266,7 @@ class IssueService
             $issue->update([
                 'status' => 'resolved',
                 'resolved_at' => now(),
-                'resolved_by' => auth()->id(),
+                'resolved_by' => Auth::id(),
             ]);
 
             $this->logActivity($issue, 'resolved', 'Issue resolved');
@@ -207,17 +284,25 @@ class IssueService
     }
 
     /**
-     * Upload attachment
+     * Upload an attachment file for an issue comment
+     * 
+     * Stores the file in the 'issue_attachments' directory and creates a database record.
+     * File name is prefixed with timestamp to ensure uniqueness.
+     * 
+     * @param Issue $issue The issue the attachment belongs to
+     * @param IssueComment $comment The comment the attachment is linked to
+     * @param UploadedFile $file The uploaded file
+     * @return IssueAttachment The created attachment model
      */
-    protected function uploadAttachment(Issue $issue, \App\Models\IssueComment $comment, $file): \App\Models\IssueAttachment
+    protected function uploadAttachment(Issue $issue, IssueComment $comment, UploadedFile $file): IssueAttachment
     {
         $fileName = time() . '_' . $file->getClientOriginalName();
         $filePath = $file->storeAs('issue_attachments', $fileName, 'public');
 
-        return \App\Models\IssueAttachment::create([
+        return IssueAttachment::create([
             'issue_id' => $issue->issue_id,
             'comment_id' => $comment->comment_id,
-            'uploaded_by' => auth()->id(),
+            'uploaded_by' => Auth::id(),
             'file_path' => $filePath,
             'file_name' => $file->getClientOriginalName(),
             'file_type' => $file->getMimeType(),
@@ -226,7 +311,16 @@ class IssueService
     }
 
     /**
-     * Log activity
+     * Log an activity for the issue
+     * 
+     * Creates an activity record to track all changes and actions performed on the issue.
+     * Activities are used for audit trail and history display.
+     * 
+     * @param Issue $issue The issue to log activity for
+     * @param string $type Activity type (created, updated, resolved, commented, etc.)
+     * @param string $description Human-readable description of the activity
+     * @param array $changes Optional array of field changes ['field' => ['from' => ..., 'to' => ...]]
+     * @return void
      */
     public function logActivity(Issue $issue, string $type, string $description, array $changes = []): void
     {
@@ -236,7 +330,7 @@ class IssueService
             'activity_type' => $type,
             'description' => $description,
             'changes' => $changes,
-            'user_id' => auth()->id(),
+            'user_id' => Auth::id(),
         ]);
     }
 }

@@ -111,333 +111,47 @@
     </div>
 
     {{-- Risk List Table --}}
-    <div class="card">
-        <div class="card-datatable table-responsive">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Code</th>
-                        <th>Description</th>
-                        <th>Workspace</th>
-                        <th>Category</th>
-                        <th>Score</th>
-                        <th>Urgency</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($risks as $risk)
-                    <tr>
-                        <td>
-                            <strong class="text-primary">#{{ $risk->code }}</strong>
-                        </td>
-                        <td>
-                            <div style="max-width: 300px;">
-                                <strong>{{ Str::limit($risk->description, 60) }}</strong>
-                                @if($risk->cause)
-                                    <br><small class="text-muted"><i class="ti ti-alert-circle me-1"></i>{{ Str::limit($risk->cause, 50) }}</small>
-                                @endif
-                            </div>
-                        </td>
-                        <td>
-                            <span class="badge bg-label-primary">
-                                {{ strtoupper(substr($risk->workspace->title, 0, 2)) }}
-                            </span>
-                            <br><small class="text-muted">{{ $risk->workspace->title }}</small>
-                        </td>
-                        <td>
-                            <span class="badge {{ $risk->category_badge }}">{{ $risk->category }}</span>
-                        </td>
-                        <td>
-                            <div class="text-center">
-                                <strong>{{ $risk->score }}</strong>
-                                <br><small class="text-muted">{{ $risk->probability }}x{{ $risk->impact }}</small>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="badge {{ $risk->urgency_badge }}">{{ $risk->urgency }}</span>
-                        </td>
-                        <td>
-                            <span class="badge {{ $risk->status_badge }}">{{ ucfirst($risk->status) }}</span>
-                        </td>
-                        <td>
-                            <div class="dropdown">
-                                <button class="btn btn-sm btn-label-secondary dropdown-toggle" data-bs-toggle="dropdown">
-                                    <i class="ti ti-dots-vertical"></i>
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="viewRisk({{ json_encode($risk) }})">
-                                        <i class="ti ti-eye me-1"></i>View Details
-                                    </a></li>
-                                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="editRisk({{ json_encode($risk) }})">
-                                        <i class="ti ti-edit me-1"></i>Edit
-                                    </a></li>
-                                    @if($risk->status == 'active' && $risk->mitigation_actions)
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li>
-                                        <form action="{{ route('risk.mark-mitigated', $risk->risk_id) }}" method="POST" class="mark-mitigated-form">
-                                            @csrf
-                                            <button type="submit" class="dropdown-item text-success">
-                                                <i class="ti ti-shield-check me-1"></i>Mark as Mitigated
-                                            </button>
-                                        </form>
-                                    </li>
-                                    @endif
-                                    @if($risk->canConvertToIssue())
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item text-warning" href="javascript:void(0)" onclick="convertToIssue('{{ $risk->risk_id }}', '{{ $risk->code }}', '{{ $risk->workspace_id }}')">
-                                        <i class="ti ti-arrow-right me-1"></i>Convert to Issue
-                                    </a></li>
-                                    @endif
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li>
-                                        <form action="{{ route('risk.destroy', $risk->risk_id) }}" method="POST" class="delete-risk-form">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="dropdown-item text-danger">
-                                                <i class="ti ti-trash me-1"></i>Delete
-                                            </button>
-                                        </form>
-                                    </li>
-                                </ul>
-                            </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="8" class="text-center text-muted py-4">
-                            <i class="ti ti-alert-circle ti-lg mb-2"></i>
-                            <p class="mb-0">No risks found. Click "Add New Risk" to create one.</p>
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
+    <x-risk.table :risks="$risks" />
 
 </div>
 
-{{-- Add Risk Modal --}}
-<div class="modal fade" id="addRiskModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <form action="{{ route('risk.store') }}" method="POST" class="modal-content">
-            @csrf
-            <div class="modal-header">
-                <h5 class="modal-title">Add New Risk</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Workspace <span class="text-danger">*</span></label>
-                        <select name="workspace_id" id="addWorkspaceSelect" class="form-select" required>
-                            <option value="">Select Workspace</option>
-                            @foreach($workspaces as $ws)
-                                <option value="{{ $ws->workspace_id }}">{{ $ws->title }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Category <span class="text-danger">*</span></label>
-                        <select name="category" id="addCategory" class="form-select" required>
-                            <option value="Technical">Technical</option>
-                            <option value="SDM">SDM</option>
-                            <option value="Financial">Financial</option>
-                            <option value="Timeline">Timeline</option>
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">Risk Description <span class="text-danger">*</span></label>
-                        <textarea name="description" class="form-control" rows="3" required></textarea>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">Cause/Root Problem</label>
-                        <textarea name="cause" class="form-control" rows="2"></textarea>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Affected Module/Task <small class="text-muted">(Optional)</small></label>
-                        <select name="affected_module" id="addTaskSelect" class="form-select">
-                            <option value="">Not related to specific task</option>
-                        </select>
-                        <small class="text-muted">Select workspace first to see tasks</small>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Probability (1-5) <span class="text-danger">*</span></label>
-                        <input type="number" name="probability" class="form-control" min="1" max="5" value="3" required>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Impact (1-5) <span class="text-danger">*</span></label>
-                        <input type="number" name="impact" class="form-control" min="1" max="5" value="3" required>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">Mitigation Actions</label>
-                        <textarea name="mitigation_actions" class="form-control" rows="3" placeholder="List the actions to mitigate this risk...&#10;1. Action one&#10;2. Action two"></textarea>
-                        <small class="text-muted">Required to mark as mitigated later</small>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary">
-                    <i class="ti ti-check me-1"></i>Create Risk
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-{{-- Edit Risk Modal --}}
-<div class="modal fade" id="editRiskModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <form id="editRiskForm" method="POST" class="modal-content">
-            @csrf
-            @method('PUT')
-            <div class="modal-header">
-                <h5 class="modal-title">Edit Risk</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Workspace <span class="text-danger">*</span></label>
-                        <select name="workspace_id" id="editWorkspaceSelect" class="form-select" required>
-                            @foreach($workspaces as $ws)
-                                <option value="{{ $ws->workspace_id }}">{{ $ws->title }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Category <span class="text-danger">*</span></label>
-                        <select name="category" id="editCategory" class="form-select" required>
-                            <option value="Technical">Technical</option>
-                            <option value="SDM">SDM</option>
-                            <option value="Financial">Financial</option>
-                            <option value="Timeline">Timeline</option>
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">Risk Description <span class="text-danger">*</span></label>
-                        <textarea name="description" id="editDescription" class="form-control" rows="3" required></textarea>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">Cause/Root Problem</label>
-                        <textarea name="cause" id="editCause" class="form-control" rows="2"></textarea>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Affected Module/Task</label>
-                        <select name="affected_module" id="editTaskSelect" class="form-select">
-                            <option value="">Not related to specific task</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Probability (1-5) <span class="text-danger">*</span></label>
-                        <input type="number" name="probability" id="editProbability" class="form-control" min="1" max="5" required>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Impact (1-5) <span class="text-danger">*</span></label>
-                        <input type="number" name="impact" id="editImpact" class="form-control" min="1" max="5" required>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">Mitigation Actions</label>
-                        <textarea name="mitigation_actions" id="editMitigation" class="form-control" rows="3"></textarea>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary">
-                    <i class="ti ti-check me-1"></i>Update Risk
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-{{-- View Details Modal --}}
-<div class="modal fade" id="viewRiskModal" tabindex="-1">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="ti ti-alert-triangle me-2"></i>Risk Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="viewRiskContent">
-                <!-- Content will be populated dynamically -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-{{-- Convert to Issue Modal --}}
-<div class="modal fade" id="convertIssueModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <form id="convertIssueForm" method="POST" class="modal-content">
-            @csrf
-            <div class="modal-header bg-warning">
-                <h5 class="modal-title text-white">Convert Risk to Issue</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="alert alert-warning">
-                    <i class="ti ti-alert-triangle me-2"></i>
-                    Converting <strong id="convertRiskCode"></strong> to an Issue. This will mark the risk as "materialized".
-                </div>
-                <input type="hidden" id="convertWorkspaceId" name="workspace_id">
-                <div class="row g-3">
-                    <div class="col-12">
-                        <label class="form-label">Issue Title <span class="text-danger">*</span></label>
-                        <input type="text" name="title" class="form-control" required>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">Description</label>
-                        <textarea name="description" class="form-control" rows="3"></textarea>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Assign To <small class="text-muted">(Member of this workspace)</small></label>
-                        <select name="assignee_id" id="convertAssigneeSelect" class="form-select">
-                            <option value="">Unassigned</option>
-                        </select>
-                        <small class="text-muted">Will be populated with workspace members</small>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Deadline</label>
-                        <input type="date" name="deadline" class="form-control" min="{{ date('Y-m-d') }}">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Priority (1-5) <span class="text-danger">*</span></label>
-                        <input type="number" name="priority" class="form-control" min="1" max="5" value="5" required>
-                        <small class="text-muted">1=Low, 5=Critical</small>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Severity (1-5) <span class="text-danger">*</span></label>
-                        <input type="number" name="severity" class="form-control" min="1" max="5" value="5" required>
-                        <small class="text-muted">1=Minor, 5=Critical</small>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-warning">
-                    <i class="ti ti-arrow-right me-1"></i>Convert to Issue
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
+{{-- All Modals --}}
+<x-risk.modals :workspaces="$workspaces" />
 
 @endsection
 
 @push('scripts')
 <script>
-// Workspace tasks data
+// ===== DATA SOURCES =====
 const workspaceTasks = @json($workspaces->mapWithKeys(function($ws) {
     return [$ws->workspace_id => $ws->kanbanTasks];
 }));
+
+// ===== UTILITIES (Simplified) =====
+function getStatusBadge(status) {
+    const badges = {active: 'danger', mitigating: 'warning', monitoring: 'primary', mitigated: 'success', materialized: 'danger', analyzing: 'info'};
+    return `<span class="badge bg-label-${badges[status] || 'secondary'}">${status}</span>`;
+}
+
+function getUrgencyBadge(urgency) {
+    const badges = {Critical: 'danger', High: 'warning', Medium: 'info', Low: 'success'};
+    return `<span class="badge bg-${badges[urgency] || 'secondary'}">${urgency}</span>`;
+}
+
+function getCategoryBadge(category) {
+    const badges = {Technical: 'primary', SDM: 'warning', Financial: 'success', Timeline: 'info'};
+    return `<span class="badge bg-label-${badges[category] || 'secondary'}">${category}</span>`;
+}
+
+function formatDate(date) {
+    return new Date(date).toLocaleString('en-US', {month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'});
+}
+
+function showSuccessMessage() {
+    @if(session('success'))
+        Swal.fire({icon: 'success', title: 'Success!', text: '{{ session('success') }}', timer: 3000});
+    @endif
+}
 
 // Workspace members data
 const workspaceMembers = @json($workspaces->mapWithKeys(function($ws) {
@@ -478,168 +192,72 @@ function loadTasksForEdit(workspaceId) {
     select.val(currentValue).trigger('change');
 }
 
-// View Risk Details with Vuexy card-based layout
+// ===== VIEW RISK DETAILS (Best Practice: AJAX Load) =====
 function viewRisk(risk) {
-    // Build HTML content
-    const urgencyBadge = risk.urgency === 'Critical' ? 'bg-danger' : risk.urgency === 'High' ? 'bg-warning' : 'bg-info';
-    const urgencyIcon = risk.urgency === 'Critical' ? 'ti-alert-triangle' : risk.urgency === 'High' ? 'ti-alert-circle' : 'ti-info-circle';
-    const statusBadge = risk.status === 'mitigated' ? 'bg-success' : risk.status === 'mitigating' ? 'bg-warning' : risk.status === 'analyzing' ? 'bg-info' : 'bg-label-secondary';
+    // Populate modal dengan data dari parameter risk object
+    $('#viewRiskCode').text(risk.code);
+    $('#viewRiskWorkspace').text(risk.workspace.title);
+    $('#viewRiskCategory').text(risk.category);
+    $('#viewRiskDescription').text(risk.description);
+    $('#viewRiskCause').text(risk.cause || 'Not specified');
+    $('#viewRiskProbability').text(risk.probability);
+    $('#viewRiskImpact').text(risk.impact);
+    $('#viewRiskScore').text(risk.score);
+    $('#viewRiskUrgency').text(risk.urgency);
+    $('#viewRiskStatus').text(risk.status.toUpperCase());
+    $('#viewRiskMitigation').text(risk.mitigation_actions || 'Not specified');
+    $('#viewRiskCreatedAt').text(formatDate(risk.created_at));
+    $('#viewRiskCreator').text(risk.creator ? risk.creator.name : 'Unknown');
     
-    let html = `
-        <!-- Overview Card -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-3">
+    // Show/hide conditional sections
+    $('#viewRiskCauseSection').toggle(!!risk.cause);
+    $('#viewRiskTaskSection').toggle(!!risk.affected_task);
+    $('#viewRiskMitigationSection').toggle(!!risk.mitigation_actions);
+    
+    if (risk.affected_task) {
+        $('#viewRiskTaskTitle').text(risk.affected_task.title);
+    }
+    
+    // Render related issues
+    const issuesContainer = $('#viewRiskIssues');
+    if (risk.issues?.length) {
+        const issuesList = risk.issues.map(issue => `
+            <div class="list-group-item px-0">
+                <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <h5 class="mb-1">
-                            <span class="badge bg-label-danger">#${risk.code}</span>
-                            <span class="ms-2">${risk.description.substring(0, 60)}${risk.description.length > 60 ? '...' : ''}</span>
-                        </h5>
+                        <strong class="text-primary">#${issue.code}</strong>
+                        <span class="ms-2">${issue.title}</span>
+                        ${issue.assignee ? `<br><small class="text-muted">Assigned to: ${issue.assignee.user.name}</small>` : ''}
                     </div>
-                    <span class="badge ${statusBadge}">
-                        <i class="ti ti-point-filled ti-xs me-1"></i>${risk.status.toUpperCase()}
+                    <span class="badge ${issue.status === 'resolved' ? 'bg-success' : issue.status === 'in_progress' ? 'bg-info' : 'bg-secondary'}">
+                        ${issue.status.replace('_', ' ').toUpperCase()}
                     </span>
                 </div>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <small class="text-muted d-block mb-1">Workspace</small>
-                        <span class="badge bg-label-primary">
-                            <i class="ti ti-briefcase ti-xs me-1"></i>${risk.workspace.title}
-                        </span>
-                    </div>
-                    <div class="col-md-6">
-                        <small class="text-muted d-block mb-1">Category</small>
-                        <span class="badge bg-label-secondary">${risk.category}</span>
-                    </div>
-                    <div class="col-md-4">
-                        <small class="text-muted d-block mb-1">Risk Score</small>
-                        <div>
-                            <span class="badge ${risk.score >= 20 ? 'bg-danger' : risk.score >= 15 ? 'bg-warning' : 'bg-info'}">
-                                <i class="ti ti-target ti-xs me-1"></i>${risk.score}/25
-                            </span>
-                        </div>
-                        <small class="text-muted">Probability: ${risk.probability}/5 × Impact: ${risk.impact}/5</small>
-                    </div>
-                    <div class="col-md-4">
-                        <small class="text-muted d-block mb-1">Urgency Level</small>
-                        <span class="badge ${urgencyBadge}">
-                            <i class="ti ${urgencyIcon} ti-xs me-1"></i>${risk.urgency}
-                        </span>
-                    </div>
-                    <div class="col-md-4">
-                        <small class="text-muted d-block mb-1">Created</small>
-                        <small>${new Date(risk.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} by ${risk.creator ? risk.creator.name : 'Unknown'}</small>
-                    </div>
-                </div>
             </div>
-        </div>
-        
-        <!-- Description Card -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <h6 class="card-title mb-3">
-                    <i class="ti ti-file-description me-2"></i>Description
-                </h6>
-                <p class="mb-0">${risk.description}</p>
-            </div>
-        </div>
-        
-        ${risk.cause ? `
-            <!-- Root Cause Card -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h6 class="card-title mb-3">
-                        <i class="ti ti-search me-2"></i>Root Cause / Problem
-                    </h6>
-                    <p class="mb-0">${risk.cause}</p>
-                </div>
-            </div>
-        ` : ''}
-        
-        ${risk.affected_task ? `
-            <!-- Affected Task Card -->
-            <div class="card mb-4 border-primary">
-                <div class="card-body">
-                    <h6 class="card-title mb-2">
-                        <i class="ti ti-link me-2 text-primary"></i>Affected Kanban Task
-                    </h6>
-                    <div class="d-flex align-items-center">
-                        <i class="ti ti-clipboard-check ti-md text-primary me-3"></i>
-                        <div>
-                            <strong>${risk.affected_task.title}</strong>
-                            <br><small class="text-muted">Task in ${risk.workspace.title}</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        ` : ''}
-        
-        ${risk.mitigation_actions ? `
-            <!-- Mitigation Actions Card -->
-            <div class="card mb-4 border-success">
-                <div class="card-body">
-                    <h6 class="card-title mb-3">
-                        <i class="ti ti-shield-check me-2 text-success"></i>Mitigation Actions
-                    </h6>
-                    <div class="alert alert-success mb-0">
-                        <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit;">${risk.mitigation_actions}</pre>
-                    </div>
-                </div>
-            </div>
-        ` : ''}
-        
-        ${risk.issues && risk.issues.length > 0 ? `
-            <!-- Related Issues Card -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h6 class="card-title mb-3">
-                        <i class="ti ti-bug me-2"></i>Related Issues
-                        <span class="badge bg-label-secondary ms-2">${risk.issues.length}</span>
-                    </h6>
-                    <div class="list-group list-group-flush">
-                        ${risk.issues.map(issue => {
-                            const issueStatusBadge = issue.status === 'resolved' ? 'badge bg-success' : 
-                                                     issue.status === 'in_progress' ? 'badge bg-info' : 
-                                                     issue.status === 'closed' ? 'badge bg-secondary' : 'badge bg-label-warning';
-                            return `
-                                <div class="list-group-item px-0">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div>
-                                            <strong class="text-primary">#${issue.code}</strong>
-                                            <span class="ms-2">${issue.title}</span>
-                                            ${issue.assignee ? `<br><small class="text-muted">Assigned to: ${issue.assignee.user.name}</small>` : ''}
-                                        </div>
-                                        <span class="${issueStatusBadge}">
-                                            ${issue.status.replace('_', ' ').toUpperCase()}
-                                        </span>
-                                    </div>
-                                </div>
-                            `;
-                        }).join('')}
-                    </div>
-                </div>
-            </div>
-        ` : `
-            <!-- No Issues Card -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h6 class="card-title mb-3">
-                        <i class="ti ti-bug me-2"></i>Related Issues
-                    </h6>
-                    <div class="text-center py-4">
-                        <i class="ti ti-circle-off ti-xl text-muted mb-3 d-block"></i>
-                        <p class="text-muted mb-0">No issues created from this risk yet</p>
-                        <small class="text-muted">Convert this risk to an issue to start tracking</small>
-                    </div>
-                </div>
-            </div>
-        `}
-    `;
+        `).join('');
+        issuesContainer.html(issuesList);
+        $('#viewRiskIssuesEmpty').hide();
+    } else {
+        issuesContainer.empty();
+        $('#viewRiskIssuesEmpty').show();
+    }
     
-    document.getElementById('viewRiskContent').innerHTML = html;
+    // Update badge colors based on values
+    updateRiskBadges(risk);
     
-    var modal = new bootstrap.Modal(document.getElementById('viewRiskModal'));
-    modal.show();
+    // Show modal
+    new bootstrap.Modal(document.getElementById('viewRiskModal')).show();
+}
+
+// Helper: Update badge colors dynamically
+function updateRiskBadges(risk) {
+    const urgencyBadges = {Critical: 'bg-danger', High: 'bg-warning', Medium: 'bg-info', Low: 'bg-success'};
+    const statusBadges = {mitigated: 'bg-success', mitigating: 'bg-warning', analyzing: 'bg-info', active: 'bg-danger'};
+    const scoreBadge = risk.score >= 20 ? 'bg-danger' : risk.score >= 15 ? 'bg-warning' : 'bg-info';
+    
+    $('#viewRiskUrgency').removeClass('bg-danger bg-warning bg-info bg-success').addClass(urgencyBadges[risk.urgency] || 'bg-secondary');
+    $('#viewRiskStatus').removeClass('bg-success bg-warning bg-info bg-danger').addClass(statusBadges[risk.status] || 'bg-label-secondary');
+    $('#viewRiskScore').removeClass('bg-danger bg-warning bg-info').addClass(scoreBadge);
 }
 
 // Edit Risk
